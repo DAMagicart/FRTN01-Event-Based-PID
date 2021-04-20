@@ -2,21 +2,21 @@ public class Regul extends Thread {
 
 	private Event_PID E_PID = new Event_PID();
 	private PID T_PID = new PID();
-
+	
 	private Plant Servo;
 
 	private int priority;
 	private boolean shouldRun = true;
 	private long starttime;
 
-	// private ModeMonitor modeMon;
+	private ModeMonitor modeMon;
 
-	public Regul(int pri) {
+	public Regul(int pri, ModeMonitor modeMon) {
 		priority = pri;
 		setPriority(priority);
 
 		Servo = new Plant();
-		// this.modeMon = modeMon;
+		this.modeMon = modeMon;
 	}
 
 	// Sets the inner controller's parameters
@@ -67,8 +67,8 @@ public class Regul extends Thread {
 			double uRef = 0;
 			double u = 0;
 
-			switch (2) {
-			case 1: {
+			switch (modeMon.getMode()) {
+			case OFF: {
 				T_PID.reset();
 				E_PID.reset();
 				u = 0;
@@ -76,7 +76,7 @@ public class Regul extends Thread {
 				PosRef = 0;
 				break;
 			}
-			case 2: {
+			case TIME: {
 				synchronized (T_PID) {
 					u = limit(T_PID.calculateOutput(AngVel, VelRef));
 					Servo.setU(u);
@@ -84,9 +84,9 @@ public class Regul extends Thread {
 				}
 				break;
 			}
-			case 3: {
+			case EVENT: {
 			}
-			case 4: {
+			case BOTH: {
 			}
 			default: {
 				System.out.println("Error: Illegal mode.");

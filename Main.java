@@ -9,8 +9,10 @@ public class Main {
 		final int refGenPriority = 7;
 		final int plotterPriority = 6;
 
+		ModeMonitor modeMon = new ModeMonitor();
+		
 		// Initialise Control system parts
-		Regul regul = new Regul(regulPriority);
+		Regul regul = new Regul(regulPriority, modeMon);
 
 		// Start remaining threads
 		regul.start();

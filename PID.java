@@ -11,8 +11,6 @@ public class PID {
     private double bd = 0;
     private double y = 0;
     private double yold = 0;
-    private double eold = 0;
-
 
     // Constructor
     public PID() {
@@ -33,13 +31,9 @@ public class PID {
 
     // Calculates the control signal v.
     public synchronized double calculateOutput(double y, double yref) {
-    	//FF
-    	//eold = e;
-    	//e = yref - y;
     	yold = this.y;
     	this.y = y;
     	D = ad * D - bd * (y - yold);
-    	//D = ad * D + bd * (e - eold);
     	return v = p.K*(p.Beta*yref -y) + I + D;
     }
 
