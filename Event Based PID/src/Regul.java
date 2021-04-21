@@ -8,6 +8,9 @@ public class Regul extends Thread {
 	private int priority;
 	private boolean shouldRun = true;
 	private long starttime;
+	
+	private graphics GUI; //Graphics for plotting values. 
+	private ReferenceGenerator refGen; //Reference generator, not used here but later hopefully!
 
 	// private ModeMonitor modeMon;
 
@@ -17,6 +20,18 @@ public class Regul extends Thread {
 
 		Servo = new Plant();
 		// this.modeMon = modeMon;
+	}
+	
+	/** Sets (called from main when starting the whole process.) */
+	public void setGUI(graphics GUI) {
+		this.GUI = GUI;
+
+	}
+
+	/** Sets ReferenceGenerator (called from main when starting the whole process.) */
+	public void setRefGen(ReferenceGenerator refGen) {
+		this.refGen = refGen;
+
 	}
 
 	// Sets the inner controller's parameters
@@ -43,7 +58,12 @@ public class Regul extends Thread {
 	private double limit(double v) {
 		return limit(v, -10, 10);
 	}
-
+	
+	public void shutDown() {
+		shouldRun = false;
+		
+	}
+	
 	// Saturation function
 	private double limit(double v, double min, double max) {
 		if (v < min)
@@ -96,6 +116,9 @@ public class Regul extends Thread {
 
 			System.out.println("U:" + u);
 			System.out.println("Angular Velocity:" + AngVel + " Angular Position:" + AngPos);
+			
+			// Sends plotting data to the plotter in graphics.
+			GUI.putMeasurementData(u, AngVel, AngPos);
 
 			// sleep
 			t = t + T_PID.getHMillis();
@@ -112,3 +135,4 @@ public class Regul extends Thread {
 		Servo.setU(0.0);
 	}
 }
+
