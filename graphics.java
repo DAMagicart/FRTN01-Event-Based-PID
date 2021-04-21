@@ -1,4 +1,3 @@
-package rts_project;
 
 import SimEnvironment.*;
 
