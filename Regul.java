@@ -2,7 +2,7 @@ public class Regul extends Thread {
 
 	private Event_PID E_PID = new Event_PID();
 	private PID T_PID = new PID();
-	
+
 	private Plant Servo;
 
 	private int priority;
@@ -10,6 +10,7 @@ public class Regul extends Thread {
 	private long starttime;
 
 	private ModeMonitor modeMon;
+	private graphics GUI;
 
 	public Regul(int pri, ModeMonitor modeMon) {
 		priority = pri;
@@ -19,23 +20,23 @@ public class Regul extends Thread {
 		this.modeMon = modeMon;
 	}
 
-	// Sets the inner controller's parameters
+	// Sets the Time controller's parameters
 	public void setTimeBasedParameters(PIDParameters p) {
 		T_PID.setParameters(p);
 	}
 
-	// Gets the inner controller's parameters
-	public PIDParameters getInnerParameters() {
+	// Gets the Time controller's parameters
+	public PIDParameters getTimeBasedParameters() {
 		return T_PID.getParameters();
 	}
 
-	// Sets the outer controller's parameters
+	// Sets the Event controller's parameters
 	public void setEventBasedParameters(PIDParameters p) {
 		E_PID.setParameters(p);
 	}
 
-	// Gets the outer controller's parameters
-	public PIDParameters getOuterParameters() {
+	// Gets the Event controller's parameters
+	public PIDParameters getEventBasedParameters() {
 		return E_PID.getParameters();
 	}
 
@@ -53,6 +54,20 @@ public class Regul extends Thread {
 		return v;
 	}
 
+	public void setgraphics(graphics GUI) {
+		this.GUI = GUI;
+	}
+
+	public void shutDown() {
+		shouldRun = false;
+	}
+
+	private void sendDataToOpCom(double yRef, double y, double u) {
+		double x = (double) (System.currentTimeMillis() - starttime) / 1000.0;
+		GUI.putControlData(x, u);
+		GUI.putMeasurementData(x, yRef, y);
+	}
+
 	public void run() {
 
 		long duration;
@@ -60,7 +75,7 @@ public class Regul extends Thread {
 		starttime = t;
 
 		while (shouldRun) {
-			double VelRef = 3.14;
+			double VelRef = 0;
 			double PosRef = 0;
 			double AngVel = Servo.getAnglePos();
 			double AngPos = Servo.getAngleVel();
@@ -78,7 +93,7 @@ public class Regul extends Thread {
 			}
 			case TIME: {
 				synchronized (T_PID) {
-					u = limit(T_PID.calculateOutput(AngVel, VelRef));
+					u = limit(T_PID.calculateOutput(AngPos, PosRef));
 					Servo.setU(u);
 					T_PID.updateState(u);
 				}
@@ -94,9 +109,11 @@ public class Regul extends Thread {
 			}
 			}
 
-			System.out.println("U:" + u);
+			//System.out.println("U:" + u);
 			System.out.println("Angular Velocity:" + AngVel + " Angular Position:" + AngPos);
 
+			
+			sendDataToOpCom(PosRef, AngPos, u);
 			// sleep
 			t = t + T_PID.getHMillis();
 			duration = t - System.currentTimeMillis();

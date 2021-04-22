@@ -45,7 +45,7 @@ public class Plant {
 	private void updateStates() {
 		omega = A11 * omega + B11 * u;
 		theta = A21 * omega;
-		System.out.println("omega: " + omega + " theta: " + theta);
+		//System.out.println("omega: " + omega + " theta: " + theta);
 	}
 
 	public double getAnglePos() {

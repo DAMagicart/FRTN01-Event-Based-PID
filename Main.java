@@ -13,6 +13,24 @@ public class Main {
 		
 		// Initialise Control system parts
 		Regul regul = new Regul(regulPriority, modeMon);
+		final graphics GUI = new graphics(plotterPriority, modeMon);
+		
+        // Set dependencies
+        regul.setgraphics(GUI); 
+        GUI.setRegul(regul);
+        
+        // Run GUI on event thread
+        Runnable initializeGUI = new Runnable(){
+            public void run(){
+                GUI.initializeGUI();
+                GUI.start();
+            }
+        };
+        try{
+            SwingUtilities.invokeAndWait(initializeGUI);
+        }catch(Exception e){
+            return;
+        }
 
 		// Start remaining threads
 		regul.start();
