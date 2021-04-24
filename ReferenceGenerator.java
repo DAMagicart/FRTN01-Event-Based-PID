@@ -128,11 +128,7 @@ public class ReferenceGenerator extends Thread {
 
 		double setpoint = 0.0;
 		double new_setpoint;
-		double u0 = 0.0, distance, now, t;
-		double tf = 0.001 * (double) timebase;
-		double ts = tf;
-		double T = 0.0;
-		double zf = 0.0, z0 = 0.0;
+		double now;
 
 		setPriority(priority);
 

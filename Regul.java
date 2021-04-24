@@ -80,9 +80,8 @@ public class Regul extends Thread {
 		starttime = t;
 
 		while (shouldRun) {
-			//double PosRef = refGen.getRef();
+			double PosRef = refGen.getRef();
 			double VelRef = 0;
-			double PosRef = Math.PI;
 			double AngVel = Servo.getAnglePos();
 			double AngPos = Servo.getAngleVel();
 			double uRef = 0;
