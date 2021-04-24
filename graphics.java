@@ -1,5 +1,4 @@
 
-
 import SimEnvironment.*;
 
 import javax.swing.*;
@@ -16,7 +15,7 @@ public class graphics {
 	private PIDParameters T_parameters;
 	private PIDParameters E_parameters;
 	private int priority;
-	private PlotterPanel measPanel;
+	private PlotterPanel measPanel, ctrlPanel;
 	private BoxPanel plotterPanel;
 	private boolean isInitialized = false;
 
@@ -39,6 +38,7 @@ public class graphics {
 	/* Starts the thread */
 	public void start() {
 		measPanel.start();
+		ctrlPanel.start();
 	}
 
 	/* Initialize the GUI */
@@ -52,8 +52,14 @@ public class graphics {
 		measPanel.setYAxis(20.0, -10.0, 2, 2);
 		measPanel.setXAxis(10, 5, 5);
 		measPanel.setUpdateFreq(10);
+		ctrlPanel = new PlotterPanel(1, priority);
+		ctrlPanel.setYAxis(20.0, -10.0, 2, 2);
+		ctrlPanel.setXAxis(10, 5, 5);
+		ctrlPanel.setUpdateFreq(10);
 
 		plotterPanel.add(measPanel);
+		plotterPanel.addFixed(10);
+		plotterPanel.add(ctrlPanel);
 		T_parameters = regul.getTimeBasedParameters();
 		E_parameters = regul.getEventBasedParameters();
 
@@ -62,6 +68,7 @@ public class graphics {
 			public void windowClosing(WindowEvent e) {
 				regul.shutDown();
 				measPanel.stopThread();
+				ctrlPanel.stopThread();
 				System.exit(0);
 			}
 		});
@@ -94,11 +101,11 @@ public class graphics {
 	
 	/** Called by Regul to plot a control signal data point. */
 	public synchronized void putControlData(double t, double u) {
-		//if (isInitialized) {
-			//ctrlPanel.putData(t, u);
-		//} else {
-			//System.out.println("Note: GUI not yet initialized. Ignoring call to putControlData().");
-		//}
+		if (isInitialized) {
+			ctrlPanel.putData(t, u);
+		} else {
+			System.out.println("Note: GUI not yet initialized. Ignoring call to putControlData().");
+		}
 	}
 
 }

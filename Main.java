@@ -13,10 +13,12 @@ public class Main {
 		
 		// Initialise Control system parts
 		Regul regul = new Regul(regulPriority, modeMon);
+		ReferenceGenerator refgen = new ReferenceGenerator(refGenPriority); 
 		final graphics GUI = new graphics(plotterPriority, modeMon);
 		
         // Set dependencies
-        regul.setgraphics(GUI); 
+        regul.setgraphics(GUI);
+        regul.setRefGen(refgen);
         GUI.setRegul(regul);
         
         // Run GUI on event thread
@@ -33,6 +35,7 @@ public class Main {
         }
 
 		// Start remaining threads
+        refgen.start();
 		regul.start();
 
 	}

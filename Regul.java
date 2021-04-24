@@ -11,6 +11,7 @@ public class Regul extends Thread {
 
 	private ModeMonitor modeMon;
 	private graphics GUI;
+	private ReferenceGenerator refGen;
 
 	public Regul(int pri, ModeMonitor modeMon) {
 		priority = pri;
@@ -57,6 +58,10 @@ public class Regul extends Thread {
 	public void setgraphics(graphics GUI) {
 		this.GUI = GUI;
 	}
+	
+	public void setRefGen(ReferenceGenerator refGen) {
+		this.refGen = refGen;
+	}
 
 	public void shutDown() {
 		shouldRun = false;
@@ -75,8 +80,9 @@ public class Regul extends Thread {
 		starttime = t;
 
 		while (shouldRun) {
+			//double PosRef = refGen.getRef();
 			double VelRef = 0;
-			double PosRef = 0;
+			double PosRef = Math.PI;
 			double AngVel = Servo.getAnglePos();
 			double AngPos = Servo.getAngleVel();
 			double uRef = 0;
@@ -110,7 +116,7 @@ public class Regul extends Thread {
 			}
 
 			//System.out.println("U:" + u);
-			System.out.println("Angular Velocity:" + AngVel + " Angular Position:" + AngPos);
+			//System.out.println("Angular Velocity:" + AngVel + " Angular Position:" + AngPos);
 
 			
 			sendDataToOpCom(PosRef, AngPos, u);
