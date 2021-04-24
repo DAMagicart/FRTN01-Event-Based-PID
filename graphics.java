@@ -1,4 +1,5 @@
 
+
 import SimEnvironment.*;
 
 import javax.swing.*;
@@ -47,7 +48,7 @@ public class graphics {
 		// Create a panel for the two plotters.
 		plotterPanel = new BoxPanel(BoxPanel.VERTICAL);
 		// Create PlotterPanels.
-		measPanel = new PlotterPanel(1, priority);
+		measPanel = new PlotterPanel(2, priority);
 		measPanel.setYAxis(20.0, -10.0, 2, 2);
 		measPanel.setXAxis(10, 5, 5);
 		measPanel.setUpdateFreq(10);
