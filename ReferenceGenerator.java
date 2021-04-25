@@ -1,14 +1,11 @@
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+package github_project;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.*;
+import javax.swing.event.*;
+import java.awt.*;
+import java.awt.event.*;
+import se.lth.control.*;
+import se.lth.control.plot.*;
 
 import se.lth.control.BoxPanel;
 import se.lth.control.MainFrame;
@@ -25,21 +22,49 @@ public class ReferenceGenerator extends Thread {
 	private int mode = MANUAL;
 
 	private class RefGUI {
+		private JFrame mFrame;
 		private BoxPanel refPanel = new BoxPanel(BoxPanel.HORIZONTAL);
 		private JPanel sliderPanel = new JPanel();
 		private BoxPanel buttonsPanel = new BoxPanel(BoxPanel.VERTICAL);
+
+		// Initierar det som behövs för att ändra variablerna för squareWave:
+		private BoxPanel fieldPanel = new BoxPanel(BoxPanel.VERTICAL);
+		private BoxPanel labelPanel = new BoxPanel(BoxPanel.VERTICAL);
+		private JPanel varPanel = new JPanel();
+
 		private JPanel rightPanel = new JPanel();
 
+		// Skapar knappar som styr över om ref generatorn ger en fyrkantsvåg eller om
+		// man justerar den manuellt med en slider.
 		private JRadioButton manButton = new JRadioButton("Manual");
 		private JRadioButton sqButton = new JRadioButton("Square");
-		private JRadioButton toButton = new JRadioButton("Time-optimal");
+		// private JRadioButton toButton = new JRadioButton("Time-optimal"); // Behövs denna?
+		
+		// Skapar en slider:
 		private JSlider slider = new JSlider(JSlider.VERTICAL, -10, 10, 0);
 
+		// Skapar två variabelfält för att kunna ändra variablerna live.
+		private DoubleField periodVar = new DoubleField(5, 3); // Oklart varför det ska vara precis 5,3 här. Taget från
+																// Opcom.
+		private DoubleField amplitudeVar = new DoubleField(5, 3); // Oklart varför det ska vara precis 5,3 här. Taget
+																	// från Opcom.
+		private JButton applyVars = new JButton("Apply new parameters");
+
+		private boolean ampChanged = false;
+		private boolean periodChanged = false;
+
 		// Constructor
-		private RefGUI(double amplitude, double period) {
-			MainFrame.showLoading();
+		private RefGUI(double start_amplitude, double start_period) {
+
+			// Bytt ut mainframe mot en JPanel som heter mainFrame
+			//MainFrame.showLoading();
+			mFrame = new JFrame("Reference Generator");
+
 			// this.amplitude = amplitude;
 			// this.period = period;
+
+			// Skapar delen med knappar för att välja om man vill använda slidern
+			// eller köra en förutbestämd square wave.
 			buttonsPanel.setBorder(BorderFactory.createEtchedBorder());
 			buttonsPanel.add(manButton);
 			buttonsPanel.addFixed(10);
@@ -52,6 +77,7 @@ public class ReferenceGenerator extends Thread {
 			rightPanel.setLayout(new BorderLayout());
 			rightPanel.add(buttonsPanel, BorderLayout.CENTER);
 
+			// Skapar den vänstra delen av GUIt, alltså slider och grejer.
 			slider.setPaintTicks(true);
 			slider.setMajorTickSpacing(5);
 			slider.setMinorTickSpacing(2);
@@ -60,10 +86,82 @@ public class ReferenceGenerator extends Thread {
 			sliderPanel.setBorder(BorderFactory.createEtchedBorder());
 			sliderPanel.add(slider);
 
+			// Skapar nytt fält med etiketter och fält för att ändra parametrar i square
+			// wave:
+
+			labelPanel.add(new JLabel("Period:"));
+			labelPanel.addFixed(5);
+			labelPanel.add(new JLabel("Amplitude:"));
+			fieldPanel.add(periodVar);
+			fieldPanel.addFixed(5);
+			fieldPanel.add(amplitudeVar);
+			periodVar.setValue(start_period);
+			periodVar.setMinimum(1);
+			periodVar.setMaximum(50);
+			amplitudeVar.setValue(start_amplitude);
+			amplitudeVar.setMaximum(10.01);
+			amplitudeVar.setMinimum(0);
+
+			periodVar.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					periodChanged = true;
+				}
+			});
+
+			amplitudeVar.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ampChanged = true;
+				}
+			});
+
+			applyVars.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if (ampChanged) {
+						amplitude = amplitudeVar.getValue();
+						ampChanged = false;
+					}
+					if (periodChanged) {
+						period = periodVar.getValue();
+						periodChanged = false;
+					}
+
+				}
+
+			});
+			
+			varPanel.setBorder(BorderFactory.createEtchedBorder());
+			varPanel.add(labelPanel);
+			varPanel.add(fieldPanel);
+			varPanel.add(applyVars);
+
+			// Lägger ihop knappar och slider till en gemensam frame:
 			refPanel.add(sliderPanel);
 			refPanel.addGlue();
 			refPanel.add(rightPanel);
+			refPanel.addGlue();
+			refPanel.add(varPanel);
 
+			// WindowListener that exits the system if the main window is closed.
+			
+			mFrame.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					System.exit(0);
+				}
+			});
+			
+			// Prövar att byta ut mainframe mot en JFrame för att bättre styra vart den ska
+			// dyka upp.
+			mFrame.getContentPane().add(refPanel, BorderLayout.CENTER);
+			mFrame.pack();
+
+			// Position the main window at the screen center.
+			Dimension sd = Toolkit.getDefaultToolkit().getScreenSize();
+			Dimension fd = mFrame.getSize();
+			mFrame.setLocation((sd.width - fd.width) / 4, (sd.height - fd.height) / 2);
+
+			// Make the window visible.
+			mFrame.setVisible(true);
+			
 			manButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					setManMode();
@@ -82,7 +180,7 @@ public class ReferenceGenerator extends Thread {
 				}
 			});
 
-			MainFrame.setPanel(refPanel, "RefGen");
+			 //MainFrame.setPanel(refPanel, "RefGen");
 
 		}
 	}
@@ -99,7 +197,7 @@ public class ReferenceGenerator extends Thread {
 		new RefGUI(amplitude, period);
 	}
 
-	//?
+	// ?
 	private synchronized void setRef(double newRef) {
 		ref = newRef;
 	}
@@ -141,10 +239,10 @@ public class ReferenceGenerator extends Thread {
 						ref = manual;
 					} else {
 						timeleft -= h;
-						//if (getParChanged()) {
-							//timeleft = 0;
-						//}
-						
+						// if (getParChanged()) {
+						// timeleft = 0;
+						// }
+
 						if (timeleft <= 0) {
 							timeleft += (long) (500.0 * period);
 							sign = -sign;
