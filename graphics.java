@@ -21,9 +21,8 @@ public class graphics {
 
 	// Declaring the panels:
 	private PlotterPanel measPanel, ctrlPanel;
-	private BoxPanel EventParametersPanel, TimeParametersPanel, plotterPanel, ParametersPanel, mainPanel,
-			modeChangePanel;
-	private JPanel TimePIDLabelPanel, TimePIDFieldPanel, EventPIDLabelPanel, EventPIDFieldPanel;
+	private BoxPanel EventParametersPanel, TimeParametersPanel, plotterPanel, ParametersPanel, mainPanel;
+	private JPanel TimePIDLabelPanel, TimePIDFieldPanel, EventPIDLabelPanel, EventPIDFieldPanel, modeChangePanel, subPanel;
 
 	// Declaring Fields:
 	private DoubleField TimeKVal = new DoubleField(5, 3);
@@ -43,9 +42,11 @@ public class graphics {
 	private DoubleField EventHVal = new DoubleField(5, 3);
 
 	private JButton applyTimeVariables, applyEventVariables;
-
+	
+	private JRadioButton OffButton;
 	private JRadioButton TimeDriven;
 	private JRadioButton EventDriven;
+	private JRadioButton BothConcurrently;
 
 	// isInitialized becomes true when the GUI initializes.
 	private boolean isInitialized = false;
@@ -104,7 +105,9 @@ public class graphics {
 		// Creates the panel for changing regulator variables:
 
 		// Creates the LabelPanel for T_PID:
+		TimeParametersPanel = new BoxPanel(BoxPanel.HORIZONTAL);
 		TimePIDLabelPanel = new JPanel();
+		TimePIDLabelPanel.setLayout(new GridLayout(0,1));
 		TimePIDLabelPanel.add(new Label("K value:"));
 		TimePIDLabelPanel.add(new Label("Ti value:"));
 		TimePIDLabelPanel.add(new Label("Td value:"));
@@ -115,6 +118,7 @@ public class graphics {
 
 		// Adding the DoubleField parameters for Time_PID:
 		TimePIDFieldPanel = new JPanel();
+		TimePIDFieldPanel.setLayout(new GridLayout(0,1));
 		TimePIDFieldPanel.add(TimeKVal);
 		TimePIDFieldPanel.add(TimeTiVal);
 		TimePIDFieldPanel.add(TimeTdVal);
@@ -132,7 +136,6 @@ public class graphics {
 		TimeBetaVal.setValue(T_parameters.Beta);
 		TimeHVal.setValue(T_parameters.H);
 		TimeHVal.setMinimum(0.00001);
-		applyTimeVariables = new JButton();
 
 		// Add action listeners for the Time_Field variables:
 
@@ -195,6 +198,7 @@ public class graphics {
 
 		});
 
+		applyTimeVariables = new JButton("Apply Time Variables");
 		applyTimeVariables.setEnabled(false);
 		applyTimeVariables.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -211,17 +215,23 @@ public class graphics {
 		});
 
 		// Adds Field Panel and Label Panel together in a common Panel with the apply
-		// button:
-		System.out.println("Av någon anledning så kör ej koden längre än hit. Högst oklart varför.");
-		TimeParametersPanel.setBorder(BorderFactory.createTitledBorder("Time_PID Parameters:"));
+		// button:		
 		TimeParametersPanel.add(TimePIDLabelPanel);
 		TimeParametersPanel.addGlue();
 		TimeParametersPanel.add(TimePIDFieldPanel);
 		TimeParametersPanel.addGlue();
-		TimeParametersPanel.add(applyTimeVariables);
-
+		
+		BoxPanel TimeParButtonPanel = new BoxPanel(BoxPanel.VERTICAL);
+		TimeParButtonPanel.setBorder(BorderFactory.createTitledBorder("Time_PID Parameters:"));
+		TimeParButtonPanel.addFixed(10);
+		TimeParButtonPanel.add(TimeParametersPanel);
+		TimeParButtonPanel.addFixed(10);
+		TimeParButtonPanel.add(applyTimeVariables, BorderLayout.SOUTH);
+		
 		// Creates the LabelPanel for E_PID:
+		EventParametersPanel = new BoxPanel(BoxPanel.HORIZONTAL);
 		EventPIDLabelPanel = new JPanel();
+		EventPIDLabelPanel.setLayout(new GridLayout(0,1));
 		EventPIDLabelPanel.add(new Label("K value:"));
 		EventPIDLabelPanel.add(new Label("Ti value:"));
 		EventPIDLabelPanel.add(new Label("Td value:"));
@@ -232,6 +242,7 @@ public class graphics {
 
 		// Adding the DoubleField parameters for Event_PID:
 		EventPIDFieldPanel = new JPanel();
+		EventPIDFieldPanel.setLayout(new GridLayout(0,1));
 		EventPIDFieldPanel.add(EventKVal);
 		EventPIDFieldPanel.add(EventTiVal);
 		EventPIDFieldPanel.add(EventTdVal);
@@ -316,46 +327,87 @@ public class graphics {
 				applyEventVariables.setEnabled(false);
 			}
 		});
-
-		EventParametersPanel.setBorder(BorderFactory.createTitledBorder("Event_PID Parameters:"));
+		
 		EventParametersPanel.add(EventPIDLabelPanel);
 		EventParametersPanel.addGlue();
 		EventParametersPanel.add(EventPIDFieldPanel);
 		EventParametersPanel.addGlue();
-		EventParametersPanel.add(applyEventVariables);
+		EventParametersPanel.add(applyEventVariables, BorderLayout.SOUTH);
+		
+		BoxPanel EventParButtonPanel = new BoxPanel(BoxPanel.VERTICAL);
+		EventParButtonPanel.setBorder(BorderFactory.createTitledBorder("Event_PID Parameters:"));
+		EventParButtonPanel.addFixed(10);
+		EventParButtonPanel.add(EventParametersPanel);
+		EventParButtonPanel.addFixed(10);
+		EventParButtonPanel.add(applyEventVariables, BorderLayout.SOUTH);
 
 		// Add together Event parameters and Time parameters:
-		ParametersPanel.add(TimeParametersPanel);
+		ParametersPanel = new BoxPanel(BoxPanel.HORIZONTAL);
+		ParametersPanel.add(TimeParButtonPanel, BorderLayout.NORTH);
 		ParametersPanel.addGlue();
-		ParametersPanel.add(EventParametersPanel);
+		ParametersPanel.add(EventParButtonPanel, BorderLayout.SOUTH);
 
 		// Create a new panel for switching between event driven and time driven
 		// regulators:
-		modeChangePanel = new BoxPanel(BoxPanel.VERTICAL);
+		modeChangePanel = new JPanel();
+		modeChangePanel.setLayout(new FlowLayout());
+		modeChangePanel.setBorder(BorderFactory.createEtchedBorder());
 		ButtonGroup group = new ButtonGroup();
+		OffButton = new JRadioButton("OFF");
+		EventDriven = new JRadioButton("EVENT");
+		TimeDriven = new JRadioButton("TIME");
+		BothConcurrently = new JRadioButton("BOTH");
+		group.add(OffButton);
 		group.add(EventDriven);
 		group.add(TimeDriven);
+		group.add(BothConcurrently);
 		TimeDriven.setSelected(true);
 
 		TimeDriven.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//TODO: Lägga in en funktion som ändrar mode till TIME här. 
+				modeMon.setMode(ModeMonitor.Mode.TIME);
 			}
 
 		});
 		
 		EventDriven.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//TODO: Lägga in en funktion som ändrar mode till EVENT här. 
+				modeMon.setMode(ModeMonitor.Mode.EVENT); 
 			}
 
 		});
 		
+		OffButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				modeMon.setMode(ModeMonitor.Mode.OFF); 
+			}
+
+		});
+		
+		BothConcurrently.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				modeMon.setMode(ModeMonitor.Mode.BOTH); 
+			}
+
+		});
+		
+		//Button mode layout
+		modeChangePanel.add(TimeDriven, BorderLayout.WEST);
+		modeChangePanel.add(EventDriven, BorderLayout.EAST);
+		modeChangePanel.add(BothConcurrently, BorderLayout.NORTH);
+		modeChangePanel.add(OffButton, BorderLayout.SOUTH);
+		
+		//sub panel layout
+		subPanel = new JPanel();
+		subPanel.setLayout(new BorderLayout());
+		subPanel.add(ParametersPanel, BorderLayout.CENTER);
+		subPanel.add(modeChangePanel, BorderLayout.SOUTH);
 
 		// Add together all Panels into one main Panel:
 		mainPanel = new BoxPanel(BoxPanel.HORIZONTAL);
-		mainPanel.add(plotterPanel, BorderLayout.CENTER);
-		mainPanel.add(ParametersPanel, BorderLayout.WEST);
+		mainPanel.add(plotterPanel);
+		mainPanel.addGlue();
+		mainPanel.add(subPanel);
 
 		// WindowListener that exits the system if the main window is closed.
 		frame.addWindowListener(new WindowAdapter() {
