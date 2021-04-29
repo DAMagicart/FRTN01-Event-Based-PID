@@ -33,6 +33,7 @@ public class PID {
     public synchronized double calculateOutput(double y, double yref) {
     	yold = this.y;
     	this.y = y;
+        e = yref-y;
     	D = ad * D - bd * (y - yold);
     	return v = p.K*(p.Beta*yref -y) + I + D;
     }
