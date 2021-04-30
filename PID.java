@@ -16,13 +16,13 @@ public class PID {
     public PID() {
         p = new PIDParameters();
         // Initial PID Variables
-        p.Beta          = 1;
+        p.Beta          = 0.5;
         p.H             = 0.02;
         p.integratorOn  = true;
-        p.K             = 0.25;
-        p.N             = 8;
-        p.Td            = 2;
-        p.Ti            = 0.15;
+        p.K             = 0.2;
+        p.N             = 0.5;
+        p.Td            = 0.5;
+        p.Ti            = 0.1;
         p.Tr            = 10;
         ad = p.Td / (p.Td + p.N * p.H);
         bd = p.K * ad* p.N;
@@ -33,7 +33,7 @@ public class PID {
     public synchronized double calculateOutput(double y, double yref) {
     	yold = this.y;
     	this.y = y;
-        e = yref-y;
+    	e = yref-y;
     	D = ad * D - bd * (y - yold);
     	return v = p.K*(p.Beta*yref -y) + I + D;
     }

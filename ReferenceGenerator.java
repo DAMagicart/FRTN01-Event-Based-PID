@@ -1,5 +1,3 @@
-package github_project;
-
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
@@ -20,6 +18,7 @@ public class ReferenceGenerator extends Thread {
 	private double ref;
 	private double max_ctrl;
 	private int mode = MANUAL;
+	private Regul regul;
 
 	private class RefGUI {
 		private JFrame mFrame;
@@ -38,8 +37,14 @@ public class ReferenceGenerator extends Thread {
 		// man justerar den manuellt med en slider.
 		private JRadioButton manButton = new JRadioButton("Manual");
 		private JRadioButton sqButton = new JRadioButton("Square");
-		// private JRadioButton toButton = new JRadioButton("Time-optimal"); // Behövs denna?
-		
+
+		private boolean noise = false;
+		private boolean load = false;
+		private JButton noiseButton = new JButton("Measurement Noise OFF");
+		private JButton lDistButton = new JButton("Load Disturbance OFF");
+		// private JRadioButton toButton = new JRadioButton("Time-optimal"); // Behövs
+		// denna?
+
 		// Skapar en slider:
 		private JSlider slider = new JSlider(JSlider.VERTICAL, -10, 10, 0);
 
@@ -57,7 +62,7 @@ public class ReferenceGenerator extends Thread {
 		private RefGUI(double start_amplitude, double start_period) {
 
 			// Bytt ut mainframe mot en JPanel som heter mainFrame
-			//MainFrame.showLoading();
+			// MainFrame.showLoading();
 			mFrame = new JFrame("Reference Generator");
 
 			// this.amplitude = amplitude;
@@ -69,9 +74,15 @@ public class ReferenceGenerator extends Thread {
 			buttonsPanel.add(manButton);
 			buttonsPanel.addFixed(10);
 			buttonsPanel.add(sqButton);
+			buttonsPanel.addFixed(10);
+			buttonsPanel.add(noiseButton);
+			buttonsPanel.addFixed(10);
+			buttonsPanel.add(lDistButton);
 			ButtonGroup group = new ButtonGroup();
 			group.add(manButton);
 			group.add(sqButton);
+			group.add(noiseButton);
+			group.add(lDistButton);
 			manButton.setSelected(true);
 
 			rightPanel.setLayout(new BorderLayout());
@@ -128,7 +139,7 @@ public class ReferenceGenerator extends Thread {
 				}
 
 			});
-			
+
 			varPanel.setBorder(BorderFactory.createEtchedBorder());
 			varPanel.add(labelPanel);
 			varPanel.add(fieldPanel);
@@ -142,13 +153,13 @@ public class ReferenceGenerator extends Thread {
 			refPanel.add(varPanel);
 
 			// WindowListener that exits the system if the main window is closed.
-			
+
 			mFrame.addWindowListener(new WindowAdapter() {
 				public void windowClosing(WindowEvent e) {
 					System.exit(0);
 				}
 			});
-			
+
 			// Prövar att byta ut mainframe mot en JFrame för att bättre styra vart den ska
 			// dyka upp.
 			mFrame.getContentPane().add(refPanel, BorderLayout.CENTER);
@@ -161,7 +172,7 @@ public class ReferenceGenerator extends Thread {
 
 			// Make the window visible.
 			mFrame.setVisible(true);
-			
+
 			manButton.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					setManMode();
@@ -172,6 +183,28 @@ public class ReferenceGenerator extends Thread {
 					setSqMode();
 				}
 			});
+			noiseButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					noise = !noise;
+					if (noise) {
+						noiseButton.setText("Measurement Noise ON");
+					} else {
+						noiseButton.setText("Measurement Noise OFF");
+					}
+					toggleNoise();
+				}
+			});
+			lDistButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					load = !load;
+					if (load) {
+						lDistButton.setText("Load Disturbance ON");
+					} else {
+						lDistButton.setText("Load Disturbance OFF");
+					}
+					toggleLoadD();
+				}
+			});
 			slider.addChangeListener(new ChangeListener() {
 				public void stateChanged(ChangeEvent e) {
 					if (!slider.getValueIsAdjusting()) {
@@ -180,7 +213,7 @@ public class ReferenceGenerator extends Thread {
 				}
 			});
 
-			 //MainFrame.setPanel(refPanel, "RefGen");
+			// MainFrame.setPanel(refPanel, "RefGen");
 
 		}
 	}
@@ -197,7 +230,10 @@ public class ReferenceGenerator extends Thread {
 		new RefGUI(amplitude, period);
 	}
 
-	// ?
+	public void setRegul(Regul regul) {
+		this.regul = regul;
+	}
+
 	private synchronized void setRef(double newRef) {
 		ref = newRef;
 	}
@@ -212,6 +248,14 @@ public class ReferenceGenerator extends Thread {
 
 	private synchronized void setManMode() {
 		mode = MANUAL;
+	}
+
+	private synchronized void toggleNoise() {
+		regul.toggleNoise();
+	}
+
+	private synchronized void toggleLoadD() {
+		regul.toggleLoadD();
 	}
 
 	public synchronized double getRef() {
@@ -239,10 +283,6 @@ public class ReferenceGenerator extends Thread {
 						ref = manual;
 					} else {
 						timeleft -= h;
-						// if (getParChanged()) {
-						// timeleft = 0;
-						// }
-
 						if (timeleft <= 0) {
 							timeleft += (long) (500.0 * period);
 							sign = -sign;

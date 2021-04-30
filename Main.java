@@ -19,6 +19,7 @@ public class Main {
         // Set dependencies
         regul.setgraphics(GUI);
         regul.setRefGen(refgen);
+        refgen.setRegul(regul);
         GUI.setRegul(regul);
         
         // Run GUI on event thread

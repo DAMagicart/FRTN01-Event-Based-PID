@@ -66,6 +66,14 @@ public class Regul extends Thread {
 	public void shutDown() {
 		shouldRun = false;
 	}
+	
+	public void toggleNoise() {
+		Servo.toggleNoise();
+	}
+	
+	public void toggleLoadD() {
+		Servo.toggleLoadD();
+	}
 
 	private void sendDataToOpCom(double yRef, double y, double u) {
 		double x = (double) (System.currentTimeMillis() - starttime) / 1000.0;

@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -7,6 +8,13 @@ import java.util.TimerTask;
 //Final swing FX animation, only add if we have time afterwards.
 
 public class Plant {
+	
+	//Noise options
+	private boolean loadD = false;
+	private boolean noise = false;
+	
+	private Random rg = new Random();
+
 //Physical constants
 	// State matrix coefficients
 	private double A11 = -0.12;
@@ -33,26 +41,46 @@ public class Plant {
 	}
 
 	public void setU(double u) {
-		if (u < -10) {
-			this.u = -10;
-		} else if (u > 10) {
-			this.u = 10;
+		if (loadD) {
+			this.u = u + 2;
 		} else {
 			this.u = u;
 		}
 	}
 
+	public void toggleNoise() {
+		noise = !noise;
+	}
+
+	public void toggleLoadD() {
+		loadD = !loadD;
+	}
+
 	private void updateStates() {
 		omega = A11 * omega + B11 * u;
 		theta = A21 * omega;
-		//System.out.println("omega: " + omega + " theta: " + theta);
+		if (omega < -10) {
+			omega = -10;
+			theta = 0;
+		} else if (omega > 10) {
+			omega = 10;
+			theta = 0;
+		}
 	}
 
 	public double getAnglePos() {
-		return theta;
+		if (noise) {
+			return theta + 0.1*rg.nextGaussian();
+		} else {
+			return theta;
+		}
 	}
 
 	public double getAngleVel() {
-		return omega;
+		if (noise) {
+			return omega + 0.1*rg.nextGaussian();
+		} else {
+			return omega;
+		}
 	}
 }
