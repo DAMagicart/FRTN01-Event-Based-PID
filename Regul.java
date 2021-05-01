@@ -58,7 +58,7 @@ public class Regul extends Thread {
 	public void setgraphics(graphics GUI) {
 		this.GUI = GUI;
 	}
-	
+
 	public void setRefGen(ReferenceGenerator refGen) {
 		this.refGen = refGen;
 	}
@@ -66,11 +66,11 @@ public class Regul extends Thread {
 	public void shutDown() {
 		shouldRun = false;
 	}
-	
+
 	public void toggleNoise() {
 		Servo.toggleNoise();
 	}
-	
+
 	public void toggleLoadD() {
 		Servo.toggleLoadD();
 	}
@@ -86,6 +86,13 @@ public class Regul extends Thread {
 		long duration;
 		long t = System.currentTimeMillis();
 		starttime = t;
+		
+		double hNom = E_PID.getParameters().H;
+		double hact = 0;
+		long timeOld = 0;
+		double eLim = 0.1;
+		//double hmax = 10;
+		double hmax = hNom * 10;
 
 		while (shouldRun) {
 			double PosRef = refGen.getRef();
@@ -94,6 +101,7 @@ public class Regul extends Thread {
 			double AngPos = Servo.getAngleVel();
 			double uRef = 0;
 			double u = 0;
+			double eP = AngPos - PosRef;
 
 			switch (modeMon.getMode()) {
 			case OFF: {
@@ -113,6 +121,18 @@ public class Regul extends Thread {
 				break;
 			}
 			case EVENT: {
+				synchronized (E_PID) {
+					//hact = (double) (System.currentTimeMillis() - timeOld) / 1000.0;
+					hact += hNom;
+					if ((Math.abs(eP) >= eLim) || (hact >= hmax)) {
+						u = limit(E_PID.calculateOutput(AngPos, PosRef, hact));
+						Servo.setU(u);
+						E_PID.updateState(u);
+						//timeOld = System.currentTimeMillis();
+						hact = 0;
+					}
+				}
+				break;
 			}
 			case BOTH: {
 			}
@@ -122,10 +142,10 @@ public class Regul extends Thread {
 			}
 			}
 
-			//System.out.println("U:" + u);
-			//System.out.println("Angular Velocity:" + AngVel + " Angular Position:" + AngPos);
+			// System.out.println("U:" + u);
+			// System.out.println("Angular Velocity:" + AngVel + " Angular Position:" +
+			// AngPos);
 
-			
 			sendDataToOpCom(PosRef, AngPos, u);
 			// sleep
 			t = t + T_PID.getHMillis();

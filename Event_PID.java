@@ -12,31 +12,30 @@ public class Event_PID {
 	private double bd = 0;
 	private double y = 0;
 	private double yold = 0;
-	private long h_act = 0;
-	private long time_old;
+	private double h_act = 0;
 
 	// Constructor
 	public Event_PID() {
 		p = new PIDParameters();
 		// Initial PID Variables
-		p.Beta = 1;
+		p.Beta = 3;
 		p.H = 0.02;
 		p.integratorOn = true;
-		p.K = -0.08;
-		p.N = 8;
-		p.Td = 2;
-		p.Ti = 5;
+		p.K = 0.2;
+		p.N = 0.2;
+		p.Td = 0.5;
+		p.Ti = 0.1;
 		p.Tr = 10;
 		setParameters(p);
 	}
 
 	// Calculates the control signal v.
-	public synchronized double calculateOutput(double y, double yref, long time) {
-		h_act = time - time_old;
-		time_old = time;
+	public synchronized double calculateOutput(double y, double yref, double hact) {
+		h_act = hact;
 		yold = this.y;
 		this.y = y;
-		if (p.Td != 0 || p.N != 0) {
+		e = yref - y;
+		if ((p.Td != 0) || (p.N != 0)) {
 			ad = p.Td / (p.Td + p.N * h_act);
 		}
 		bd = p.K * ad * p.N;
@@ -65,6 +64,11 @@ public class Event_PID {
 	// Must clone newParameters.
 	public synchronized void setParameters(PIDParameters newParameters) {
 		p = (PIDParameters) newParameters.clone();
+		if (p.Ti == 0) {
+			p.integratorOn = false;
+		} else {
+			p.integratorOn = true;
+		}
 		if (!p.integratorOn) {
 			I = 0;
 		}
