@@ -168,7 +168,7 @@ public class ReferenceGenerator extends Thread {
 			// Position the main window at the screen center.
 			Dimension sd = Toolkit.getDefaultToolkit().getScreenSize();
 			Dimension fd = mFrame.getSize();
-			mFrame.setLocation((sd.width - fd.width) / 4, (sd.height - fd.height) / 2);
+			mFrame.setLocation((sd.width - fd.width) / 9, (sd.height - fd.height) / 2);
 
 			// Make the window visible.
 			mFrame.setVisible(true);
