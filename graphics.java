@@ -429,7 +429,7 @@ public class graphics {
 		Dimension sd = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension fd = frame.getSize();
 		// Den lägger frame lite till höger så att den inte ska komma rakt över Reference generator
-		frame.setLocation((sd.width - fd.width) * 2 / 3, (sd.height - fd.height) / 2); 
+		frame.setLocation((sd.width - fd.width) * 5 / 6, (sd.height - fd.height) / 2); 
 
 		// Make the window visible.
 		frame.setVisible(true);
