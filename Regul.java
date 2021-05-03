@@ -1,3 +1,4 @@
+
 public class Regul extends Thread {
 
 	private Event_PID E_PID = new Event_PID();
@@ -12,6 +13,8 @@ public class Regul extends Thread {
 	private ModeMonitor modeMon;
 	private graphics GUI;
 	private ReferenceGenerator refGen;
+
+	double eLim = 0.1;
 
 	public Regul(int pri, ModeMonitor modeMon) {
 		priority = pri;
@@ -67,6 +70,15 @@ public class Regul extends Thread {
 		shouldRun = false;
 	}
 
+	public double geteLim() {
+		return eLim;
+	}
+
+	public void seteLim(double neweLim) {
+
+		this.eLim = neweLim;
+	}
+
 	public void toggleNoise() {
 		Servo.toggleNoise();
 	}
@@ -86,12 +98,11 @@ public class Regul extends Thread {
 		long duration;
 		long t = System.currentTimeMillis();
 		starttime = t;
-		
+
 		double hNom = E_PID.getParameters().H;
 		double hact = 0;
 		long timeOld = 0;
-		double eLim = 0.1;
-		//double hmax = 10;
+		// double hmax = 10;
 		double hmax = hNom * 10;
 
 		while (shouldRun) {
@@ -122,13 +133,13 @@ public class Regul extends Thread {
 			}
 			case EVENT: {
 				synchronized (E_PID) {
-					//hact = (double) (System.currentTimeMillis() - timeOld) / 1000.0;
+					// hact = (double) (System.currentTimeMillis() - timeOld) / 1000.0;
 					hact += hNom;
 					if ((Math.abs(eP) >= eLim) || (hact >= hmax)) {
 						u = limit(E_PID.calculateOutput(AngPos, PosRef, hact));
 						Servo.setU(u);
 						E_PID.updateState(u);
-						//timeOld = System.currentTimeMillis();
+						// timeOld = System.currentTimeMillis();
 						hact = 0;
 					}
 				}
