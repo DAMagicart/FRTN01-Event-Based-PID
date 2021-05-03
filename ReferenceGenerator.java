@@ -31,6 +31,22 @@ public class ReferenceGenerator extends Thread {
 		private BoxPanel labelPanel = new BoxPanel(BoxPanel.VERTICAL);
 		private JPanel varPanel = new JPanel();
 
+		// Initierar det som behövs för att ändra Disturbance i form av load och noise:
+		private BoxPanel disturbanceFieldPanel = new BoxPanel(BoxPanel.VERTICAL);
+		private BoxPanel disturbanceLabelPanel = new BoxPanel(BoxPanel.VERTICAL);
+		private JPanel disturbancePanel = new JPanel();
+
+		private DoubleField loadField = new DoubleField(5, 3);
+		private DoubleField noiseField = new DoubleField(5, 3);
+
+		private JButton applyDisturbance = new JButton("Apply new Disturbance");
+		
+		private BoxPanel rightRightPanel = new BoxPanel(BoxPanel.VERTICAL);
+
+		private boolean loadChange = false;
+		private boolean noiseChange = false;
+		private boolean disturbanceChange = false;
+
 		private JPanel rightPanel = new JPanel();
 
 		// Skapar knappar som styr över om ref generatorn ger en fyrkantsvåg eller om
@@ -42,17 +58,13 @@ public class ReferenceGenerator extends Thread {
 		private boolean load = false;
 		private JButton noiseButton = new JButton("Measurement Noise OFF");
 		private JButton lDistButton = new JButton("Load Disturbance OFF");
-		// private JRadioButton toButton = new JRadioButton("Time-optimal"); // Behövs
-		// denna?
 
 		// Skapar en slider:
 		private JSlider slider = new JSlider(JSlider.VERTICAL, -10, 10, 0);
 
 		// Skapar två variabelfält för att kunna ändra variablerna live.
-		private DoubleField periodVar = new DoubleField(5, 3); // Oklart varför det ska vara precis 5,3 här. Taget från
-																// Opcom.
-		private DoubleField amplitudeVar = new DoubleField(5, 3); // Oklart varför det ska vara precis 5,3 här. Taget
-																	// från Opcom.
+		private DoubleField periodVar = new DoubleField(5, 3);
+		private DoubleField amplitudeVar = new DoubleField(5, 3);
 		private JButton applyVars = new JButton("Apply new parameters");
 
 		private boolean ampChanged = false;
@@ -140,17 +152,69 @@ public class ReferenceGenerator extends Thread {
 
 			});
 
+
+			disturbanceLabelPanel.add(new Label("Load disturbance:"));
+			disturbanceLabelPanel.add(new Label("Noise disturbance:"));
+			disturbanceFieldPanel.add(loadField);
+			disturbanceFieldPanel.add(noiseField);
+			
+			
+			//loadField.setValue(regul.getLoadD());
+			applyDisturbance.setEnabled(false);
+
+			loadField.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					loadChange = true;
+					applyDisturbance.setEnabled(true);
+
+				}
+
+			});
+
+			noiseField.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					noiseChange = true;
+					applyDisturbance.setEnabled(true);
+				}
+			});
+
+			applyDisturbance.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if(loadChange) {
+						regul.setLoadD(loadField.getValue())   ;
+						
+					}
+					if(noiseChange) {
+						//TODO: Implementera klart denna.
+						
+					}
+					loadChange = false;
+					noiseChange = false;
+					applyDisturbance.setEnabled(false);
+				}
+
+			});
+			disturbancePanel.setBorder(BorderFactory.createEtchedBorder());
+			disturbancePanel.add(disturbanceLabelPanel);
+			disturbancePanel.add(disturbanceFieldPanel);
+			disturbancePanel.add(applyDisturbance);
+			
+
 			varPanel.setBorder(BorderFactory.createEtchedBorder());
 			varPanel.add(labelPanel);
 			varPanel.add(fieldPanel);
 			varPanel.add(applyVars);
+			
+			rightRightPanel.add(varPanel,BorderLayout.NORTH);
+			rightRightPanel.add(disturbancePanel,BorderLayout.SOUTH);
+			
 
 			// Lägger ihop knappar och slider till en gemensam frame:
 			refPanel.add(sliderPanel);
 			refPanel.addGlue();
 			refPanel.add(rightPanel);
 			refPanel.addGlue();
-			refPanel.add(varPanel);
+			refPanel.add(rightRightPanel);
 
 			// WindowListener that exits the system if the main window is closed.
 
