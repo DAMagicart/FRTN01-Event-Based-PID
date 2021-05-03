@@ -11,6 +11,8 @@ public class Plant {
 	
 	//Noise options
 	private boolean loadD = false;
+	private double loadValue = 2;
+	
 	private boolean noise = false;
 	
 	private Random rg = new Random();
@@ -42,7 +44,7 @@ public class Plant {
 
 	public void setU(double u) {
 		if (loadD) {
-			this.u = u + 2;
+			this.u = u + loadValue;
 		} else {
 			this.u = u;
 		}
@@ -54,6 +56,27 @@ public class Plant {
 
 	public void toggleLoadD() {
 		loadD = !loadD;
+	}
+	
+	public double getLoadD() {
+		
+		return loadValue;
+	}
+	
+	public void setLoadD(double newLoad) {
+		this.loadValue = newLoad;
+		
+	}
+	
+	public double getNoise() {
+		
+		//TODO: Göra klar noise här.
+		return 0;
+	}
+	
+	public void setNoise(double newNoise) {
+		//TODO: Göra klart nosie här.
+		
 	}
 
 	private void updateStates() {
@@ -84,3 +107,4 @@ public class Plant {
 		}
 	}
 }
+
