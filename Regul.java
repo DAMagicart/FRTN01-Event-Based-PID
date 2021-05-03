@@ -86,6 +86,27 @@ public class Regul extends Thread {
 	public void toggleLoadD() {
 		Servo.toggleLoadD();
 	}
+	
+	public void setNoise(double newNoise) {
+		
+		//TODO skriva in ny noise här.
+	}
+	
+	public void getNoise() {
+		//TODO: Implementera noise här.
+		
+	}
+	
+	public void setLoadD(double newLoad) {
+		Servo.setLoadD(newLoad);
+		
+	}
+	
+	public double getLoadD() {
+		return Servo.getLoadD();
+		
+	}
+	
 
 	private void sendDataToOpCom(double yRef, double y, double u) {
 		double x = (double) (System.currentTimeMillis() - starttime) / 1000.0;
