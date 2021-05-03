@@ -1,4 +1,3 @@
-
 import SimEnvironment.*;
 
 import javax.swing.*;
@@ -21,8 +20,9 @@ public class graphics {
 
 	// Declaring the panels:
 	private PlotterPanel measPanel, ctrlPanel;
-	private BoxPanel EventParametersPanel, TimeParametersPanel, plotterPanel, ParametersPanel, mainPanel;
-	private JPanel TimePIDLabelPanel, TimePIDFieldPanel, EventPIDLabelPanel, EventPIDFieldPanel, modeChangePanel, subPanel;
+	private BoxPanel EventParametersPanel, TimeParametersPanel, plotterPanel, ParametersPanel, mainPanel, eLimPanel;
+	private JPanel TimePIDLabelPanel, TimePIDFieldPanel, EventPIDLabelPanel, EventPIDFieldPanel, modeChangePanel,
+			subPanel, eLimLabelPanel, eLimFieldPanel;
 
 	// Declaring Fields:
 	private DoubleField TimeKVal = new DoubleField(5, 3);
@@ -41,8 +41,10 @@ public class graphics {
 	private DoubleField EventBetaVal = new DoubleField(5, 3);
 	private DoubleField EventHVal = new DoubleField(5, 3);
 
+	private DoubleField EventeLim = new DoubleField(5, 3);
+
 	private JButton applyTimeVariables, applyEventVariables;
-	
+
 	private JRadioButton OffButton;
 	private JRadioButton TimeDriven;
 	private JRadioButton EventDriven;
@@ -107,7 +109,7 @@ public class graphics {
 		// Creates the LabelPanel for T_PID:
 		TimeParametersPanel = new BoxPanel(BoxPanel.HORIZONTAL);
 		TimePIDLabelPanel = new JPanel();
-		TimePIDLabelPanel.setLayout(new GridLayout(0,1));
+		TimePIDLabelPanel.setLayout(new GridLayout(0, 1));
 		TimePIDLabelPanel.add(new Label("K value:"));
 		TimePIDLabelPanel.add(new Label("Ti value:"));
 		TimePIDLabelPanel.add(new Label("Td value:"));
@@ -118,7 +120,7 @@ public class graphics {
 
 		// Adding the DoubleField parameters for Time_PID:
 		TimePIDFieldPanel = new JPanel();
-		TimePIDFieldPanel.setLayout(new GridLayout(0,1));
+		TimePIDFieldPanel.setLayout(new GridLayout(0, 1));
 		TimePIDFieldPanel.add(TimeKVal);
 		TimePIDFieldPanel.add(TimeTiVal);
 		TimePIDFieldPanel.add(TimeTdVal);
@@ -215,23 +217,23 @@ public class graphics {
 		});
 
 		// Adds Field Panel and Label Panel together in a common Panel with the apply
-		// button:		
+		// button:
 		TimeParametersPanel.add(TimePIDLabelPanel);
 		TimeParametersPanel.addGlue();
 		TimeParametersPanel.add(TimePIDFieldPanel);
 		TimeParametersPanel.addGlue();
-		
+
 		BoxPanel TimeParButtonPanel = new BoxPanel(BoxPanel.VERTICAL);
 		TimeParButtonPanel.setBorder(BorderFactory.createTitledBorder("Time_PID Parameters:"));
 		TimeParButtonPanel.addFixed(10);
 		TimeParButtonPanel.add(TimeParametersPanel);
 		TimeParButtonPanel.addFixed(10);
 		TimeParButtonPanel.add(applyTimeVariables, BorderLayout.SOUTH);
-		
+
 		// Creates the LabelPanel for E_PID:
 		EventParametersPanel = new BoxPanel(BoxPanel.HORIZONTAL);
 		EventPIDLabelPanel = new JPanel();
-		EventPIDLabelPanel.setLayout(new GridLayout(0,1));
+		EventPIDLabelPanel.setLayout(new GridLayout(0, 1));
 		EventPIDLabelPanel.add(new Label("K value:"));
 		EventPIDLabelPanel.add(new Label("Ti value:"));
 		EventPIDLabelPanel.add(new Label("Td value:"));
@@ -242,7 +244,7 @@ public class graphics {
 
 		// Adding the DoubleField parameters for Event_PID:
 		EventPIDFieldPanel = new JPanel();
-		EventPIDFieldPanel.setLayout(new GridLayout(0,1));
+		EventPIDFieldPanel.setLayout(new GridLayout(0, 1));
 		EventPIDFieldPanel.add(EventKVal);
 		EventPIDFieldPanel.add(EventTiVal);
 		EventPIDFieldPanel.add(EventTdVal);
@@ -315,6 +317,28 @@ public class graphics {
 			}
 		});
 
+		// Adding field to change eLim in the event detector.
+		BoxPanel eLimPanel = new BoxPanel(BoxPanel.HORIZONTAL);
+		JPanel eLimLabelPanel = new JPanel();
+		JPanel eLimFieldPanel = new JPanel();
+
+		eLimLabelPanel.add(new Label("eLim Parameter"));
+		eLimFieldPanel.add(EventeLim);
+		EventeLim.setValue(regul.geteLim());
+
+		EventeLim.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				regul.seteLim(EventeLim.getValue());
+				System.out.println(regul.geteLim());
+
+			}
+		});
+
+		// Adding together the parts for a eLim field.
+		eLimPanel.add(eLimLabelPanel);
+		eLimPanel.addGlue();
+		eLimPanel.add(eLimFieldPanel);
+
 		applyEventVariables = new JButton("Apply Event Variables");
 		applyEventVariables.setEnabled(false);
 		applyEventVariables.addActionListener(new ActionListener() {
@@ -327,13 +351,15 @@ public class graphics {
 				applyEventVariables.setEnabled(false);
 			}
 		});
-		
+
 		EventParametersPanel.add(EventPIDLabelPanel);
 		EventParametersPanel.addGlue();
 		EventParametersPanel.add(EventPIDFieldPanel);
 		EventParametersPanel.addGlue();
 		EventParametersPanel.add(applyEventVariables, BorderLayout.SOUTH);
-		
+		EventParametersPanel.add(eLimPanel, BorderLayout.EAST); // Adding the eLim parameter changer to the
+																// EventParametersPanel.
+
 		BoxPanel EventParButtonPanel = new BoxPanel(BoxPanel.VERTICAL);
 		EventParButtonPanel.setBorder(BorderFactory.createTitledBorder("Event_PID Parameters:"));
 		EventParButtonPanel.addFixed(10);
@@ -369,35 +395,35 @@ public class graphics {
 			}
 
 		});
-		
+
 		EventDriven.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				modeMon.setMode(ModeMonitor.Mode.EVENT); 
+				modeMon.setMode(ModeMonitor.Mode.EVENT);
 			}
 
 		});
-		
+
 		OffButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				modeMon.setMode(ModeMonitor.Mode.OFF); 
+				modeMon.setMode(ModeMonitor.Mode.OFF);
 			}
 
 		});
-		
+
 		BothConcurrently.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				modeMon.setMode(ModeMonitor.Mode.BOTH); 
+				modeMon.setMode(ModeMonitor.Mode.BOTH);
 			}
 
 		});
-		
-		//Button mode layout
+
+		// Button mode layout
 		modeChangePanel.add(TimeDriven, BorderLayout.WEST);
 		modeChangePanel.add(EventDriven, BorderLayout.EAST);
 		modeChangePanel.add(BothConcurrently, BorderLayout.NORTH);
 		modeChangePanel.add(OffButton, BorderLayout.SOUTH);
-		
-		//sub panel layout
+
+		// sub panel layout
 		subPanel = new JPanel();
 		subPanel.setLayout(new BorderLayout());
 		subPanel.add(ParametersPanel, BorderLayout.CENTER);
@@ -428,8 +454,9 @@ public class graphics {
 		// Position the main window at the screen center.
 		Dimension sd = Toolkit.getDefaultToolkit().getScreenSize();
 		Dimension fd = frame.getSize();
-		// Den lägger frame lite till höger så att den inte ska komma rakt över Reference generator
-		frame.setLocation((sd.width - fd.width) * 5 / 6, (sd.height - fd.height) / 2); 
+		// Den lägger frame lite till höger så att den inte ska komma rakt över
+		// Reference generator
+		frame.setLocation((sd.width - fd.width) * 5 / 6, (sd.height - fd.height) / 2);
 
 		// Make the window visible.
 		frame.setVisible(true);
@@ -456,3 +483,4 @@ public class graphics {
 	}
 
 }
+
