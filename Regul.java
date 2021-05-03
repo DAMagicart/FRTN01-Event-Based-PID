@@ -13,6 +13,7 @@ public class Regul extends Thread {
 	private ModeMonitor modeMon;
 	private graphics GUI;
 	private ReferenceGenerator refGen;
+	private DisturbanceGenerator disturbanceGen;
 
 	double eLim = 0.1;
 
@@ -65,6 +66,11 @@ public class Regul extends Thread {
 	public void setRefGen(ReferenceGenerator refGen) {
 		this.refGen = refGen;
 	}
+	
+	public void setdisturbanceGen(DisturbanceGenerator disturbanceGen) {
+		
+		this.disturbanceGen = disturbanceGen;
+	}
 
 	public void shutDown() {
 		shouldRun = false;
@@ -83,10 +89,11 @@ public class Regul extends Thread {
 		Servo.toggleNoise();
 	}
 
+	/*
 	public void toggleLoadD() {
 		Servo.toggleLoadD();
 	}
-	
+	*/
 	public void setNoise(double newNoise) {
 		
 		//TODO skriva in ny noise här.
@@ -128,6 +135,11 @@ public class Regul extends Thread {
 
 		while (shouldRun) {
 			double PosRef = refGen.getRef();
+			
+			double disturbanceSignal = disturbanceGen.getRef();
+			
+			Servo.setLoadD(disturbanceSignal);
+			
 			double VelRef = 0;
 			double AngVel = Servo.getAnglePos();
 			double AngPos = Servo.getAngleVel();
