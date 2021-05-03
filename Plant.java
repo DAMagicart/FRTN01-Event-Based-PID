@@ -1,3 +1,4 @@
+
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -10,8 +11,8 @@ import java.util.TimerTask;
 public class Plant {
 	
 	//Noise options
-	private boolean loadD = false;
-	private double loadValue = 2;
+	private boolean loadD = true;
+	private double loadValue;
 	
 	private boolean noise = false;
 	
@@ -54,10 +55,11 @@ public class Plant {
 		noise = !noise;
 	}
 
+	/*
 	public void toggleLoadD() {
 		loadD = !loadD;
 	}
-	
+	*/
 	public double getLoadD() {
 		
 		return loadValue;
@@ -107,4 +109,3 @@ public class Plant {
 		}
 	}
 }
-
