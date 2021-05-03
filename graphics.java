@@ -1,3 +1,4 @@
+
 import SimEnvironment.*;
 
 import javax.swing.*;
@@ -55,6 +56,9 @@ public class graphics {
 
 	// The boolean hChanged is to keep track if the sample rate has changed.
 	private boolean hChanged = false;
+	
+	//Boolean to keep track in eLim:
+	private boolean eLimChanged = false;
 
 	// Monitors
 	private ModeMonitor modeMon;
@@ -328,9 +332,11 @@ public class graphics {
 
 		EventeLim.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				regul.seteLim(EventeLim.getValue());
-				System.out.println(regul.geteLim());
-
+				if(eLimChanged == false) {
+					eLimChanged = true;
+					applyEventVariables.setEnabled(true);
+					
+				}
 			}
 		});
 
@@ -344,10 +350,14 @@ public class graphics {
 		applyEventVariables.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				regul.setEventBasedParameters(E_parameters);
+				if(eLimChanged) {
+					regul.seteLim(EventeLim.getValue());
+				}
 				if (hChanged) {
 					regul.setTimeBasedParameters(T_parameters);
 				}
 				hChanged = false;
+				eLimChanged = false;
 				applyEventVariables.setEnabled(false);
 			}
 		});
