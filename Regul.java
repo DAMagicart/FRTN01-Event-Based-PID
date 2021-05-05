@@ -67,7 +67,7 @@ public class Regul extends Thread {
 		this.refGen = refGen;
 	}
 	
-	public void setdisturbanceGen(DisturbanceGenerator disturbanceGen) {
+	public void setDisturbanceGen(DisturbanceGenerator disturbanceGen) {
 		
 		this.disturbanceGen = disturbanceGen;
 	}
@@ -136,7 +136,7 @@ public class Regul extends Thread {
 		while (shouldRun) {
 			double PosRef = refGen.getRef();
 			
-			double disturbanceSignal = disturbanceGen.getRef();
+			double disturbanceSignal = disturbanceGen.getDist();
 			
 			Servo.setLoadD(disturbanceSignal);
 			
@@ -206,3 +206,4 @@ public class Regul extends Thread {
 		Servo.setU(0.0);
 	}
 }
+
