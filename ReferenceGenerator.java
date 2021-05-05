@@ -29,23 +29,7 @@ public class ReferenceGenerator extends Thread {
 		// Initierar det som behövs för att ändra variablerna för squareWave:
 		private BoxPanel fieldPanel = new BoxPanel(BoxPanel.VERTICAL);
 		private BoxPanel labelPanel = new BoxPanel(BoxPanel.VERTICAL);
-		private JPanel varPanel = new JPanel();
-
-		// Initierar det som behövs för att ändra Disturbance i form av load och noise:
-		private BoxPanel disturbanceFieldPanel = new BoxPanel(BoxPanel.VERTICAL);
-		private BoxPanel disturbanceLabelPanel = new BoxPanel(BoxPanel.VERTICAL);
-		private JPanel disturbancePanel = new JPanel();
-
-		private DoubleField loadField = new DoubleField(5, 3);
-		private DoubleField noiseField = new DoubleField(5, 3);
-
-		private JButton applyDisturbance = new JButton("Apply new Disturbance");
-		
-		private BoxPanel rightRightPanel = new BoxPanel(BoxPanel.VERTICAL);
-
-		private boolean loadChange = false;
-		private boolean noiseChange = false;
-		private boolean disturbanceChange = false;
+		private BoxPanel varPanel = new BoxPanel();
 
 		private JPanel rightPanel = new JPanel();
 
@@ -54,10 +38,6 @@ public class ReferenceGenerator extends Thread {
 		private JRadioButton manButton = new JRadioButton("Manual");
 		private JRadioButton sqButton = new JRadioButton("Square");
 
-		private boolean noise = false;
-		private boolean load = false;
-		private JButton noiseButton = new JButton("Measurement Noise OFF");
-		private JButton lDistButton = new JButton("Load Disturbance OFF");
 
 		// Skapar en slider:
 		private JSlider slider = new JSlider(JSlider.VERTICAL, -10, 10, 0);
@@ -86,15 +66,10 @@ public class ReferenceGenerator extends Thread {
 			buttonsPanel.add(manButton);
 			buttonsPanel.addFixed(10);
 			buttonsPanel.add(sqButton);
-			buttonsPanel.addFixed(10);
-			buttonsPanel.add(noiseButton);
-			buttonsPanel.addFixed(10);
-			buttonsPanel.add(lDistButton);
 			ButtonGroup group = new ButtonGroup();
 			group.add(manButton);
 			group.add(sqButton);
-			group.add(noiseButton);
-			group.add(lDistButton);
+			
 			manButton.setSelected(true);
 
 			rightPanel.setLayout(new BorderLayout());
@@ -152,69 +127,19 @@ public class ReferenceGenerator extends Thread {
 
 			});
 
-
-			disturbanceLabelPanel.add(new Label("Load disturbance:"));
-			disturbanceLabelPanel.add(new Label("Noise disturbance:"));
-			disturbanceFieldPanel.add(loadField);
-			disturbanceFieldPanel.add(noiseField);
-			
-			
-			//loadField.setValue(regul.getLoadD());
-			applyDisturbance.setEnabled(false);
-
-			loadField.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					loadChange = true;
-					applyDisturbance.setEnabled(true);
-
-				}
-
-			});
-
-			noiseField.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					noiseChange = true;
-					applyDisturbance.setEnabled(true);
-				}
-			});
-
-			applyDisturbance.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if(loadChange) {
-						regul.setLoadD(loadField.getValue())   ;
-						
-					}
-					if(noiseChange) {
-						//TODO: Implementera klart denna.
-						
-					}
-					loadChange = false;
-					noiseChange = false;
-					applyDisturbance.setEnabled(false);
-				}
-
-			});
-			disturbancePanel.setBorder(BorderFactory.createEtchedBorder());
-			disturbancePanel.add(disturbanceLabelPanel);
-			disturbancePanel.add(disturbanceFieldPanel);
-			disturbancePanel.add(applyDisturbance);
 			
 
 			varPanel.setBorder(BorderFactory.createEtchedBorder());
 			varPanel.add(labelPanel);
 			varPanel.add(fieldPanel);
-			varPanel.add(applyVars);
-			
-			rightRightPanel.add(varPanel,BorderLayout.NORTH);
-			rightRightPanel.add(disturbancePanel,BorderLayout.SOUTH);
-			
+			varPanel.add(applyVars);			
 
 			// Lägger ihop knappar och slider till en gemensam frame:
 			refPanel.add(sliderPanel);
 			refPanel.addGlue();
 			refPanel.add(rightPanel);
 			refPanel.addGlue();
-			refPanel.add(rightRightPanel);
+			refPanel.add(varPanel);
 
 			// WindowListener that exits the system if the main window is closed.
 
@@ -232,7 +157,7 @@ public class ReferenceGenerator extends Thread {
 			// Position the main window at the screen center.
 			Dimension sd = Toolkit.getDefaultToolkit().getScreenSize();
 			Dimension fd = mFrame.getSize();
-			mFrame.setLocation((sd.width - fd.width) / 9, (sd.height - fd.height) / 2);
+			mFrame.setLocation((sd.width - fd.width) / 9, (sd.height - fd.height)*3/ 5);
 
 			// Make the window visible.
 			mFrame.setVisible(true);
@@ -247,28 +172,7 @@ public class ReferenceGenerator extends Thread {
 					setSqMode();
 				}
 			});
-			noiseButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					noise = !noise;
-					if (noise) {
-						noiseButton.setText("Measurement Noise ON");
-					} else {
-						noiseButton.setText("Measurement Noise OFF");
-					}
-					toggleNoise();
-				}
-			});
-			lDistButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					load = !load;
-					if (load) {
-						lDistButton.setText("Load Disturbance ON");
-					} else {
-						lDistButton.setText("Load Disturbance OFF");
-					}
-					toggleLoadD();
-				}
-			});
+			
 			slider.addChangeListener(new ChangeListener() {
 				public void stateChanged(ChangeEvent e) {
 					if (!slider.getValueIsAdjusting()) {
@@ -313,15 +217,7 @@ public class ReferenceGenerator extends Thread {
 	private synchronized void setManMode() {
 		mode = MANUAL;
 	}
-
-	private synchronized void toggleNoise() {
-		regul.toggleNoise();
-	}
-
-	private synchronized void toggleLoadD() {
-		regul.toggleLoadD();
-	}
-
+	
 	public synchronized double getRef() {
 		return (mode == MANUAL) ? manual : ref;
 	}
