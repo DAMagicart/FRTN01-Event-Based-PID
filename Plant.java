@@ -17,6 +17,7 @@ public class Plant {
 	private boolean noise = false;
 	
 	private Random rg = new Random();
+	private double noiseAmp = 0.1;
 
 //Physical constants
 	// State matrix coefficients
@@ -71,13 +72,11 @@ public class Plant {
 	}
 	
 	public double getNoise() {
-		
-		//TODO: Göra klar noise här.
-		return 0;
+		return noiseAmp;
 	}
 	
 	public void setNoise(double newNoise) {
-		//TODO: Göra klart nosie här.
+		noiseAmp = newNoise;
 		
 	}
 
@@ -95,7 +94,7 @@ public class Plant {
 
 	public double getAnglePos() {
 		if (noise) {
-			return theta + 0.1*rg.nextGaussian();
+			return theta + noiseAmp*rg.nextGaussian();
 		} else {
 			return theta;
 		}
@@ -103,9 +102,10 @@ public class Plant {
 
 	public double getAngleVel() {
 		if (noise) {
-			return omega + 0.1*rg.nextGaussian();
+			return omega + noiseAmp*rg.nextGaussian();
 		} else {
 			return omega;
 		}
 	}
 }
+
