@@ -1,5 +1,6 @@
 package github_project;
 
+
 import javax.swing.*;
 import javax.swing.event.*;
 import java.awt.*;
@@ -171,6 +172,7 @@ public class DisturbanceGenerator extends Thread {
 			//Skapar allting för att kunna ändra noise disturbance parametern:
 			noiseLabelPanel.add(new Label("Noise disturbance:"));
 			noiseFieldPanel.add(noiseField);
+			noiseField.setValue(0.1);
 
 			noiseField.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -182,8 +184,7 @@ public class DisturbanceGenerator extends Thread {
 			applyNoise.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if (noiseChange) {
-						// TODO: Implementera klart denna.
-
+						changeNoise(noiseField.getValue());
 					}
 					noiseChange = false;
 					applyNoise.setEnabled(false);
@@ -296,6 +297,9 @@ public class DisturbanceGenerator extends Thread {
 
 	private synchronized void toggleNoise() {
 		regul.toggleNoise();
+	}
+	private synchronized void changeNoise(double noiseAmp) {
+		regul.setNoise(noiseAmp);
 	}
 
 	
