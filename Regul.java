@@ -95,13 +95,11 @@ public class Regul extends Thread {
 	}
 	*/
 	public void setNoise(double newNoise) {
-		
-		//TODO skriva in ny noise här.
+		Servo.setNoise(newNoise);
 	}
 	
-	public void getNoise() {
-		//TODO: Implementera noise här.
-		
+	public double getNoise() {
+		return Servo.getNoise();
 	}
 	
 	public void setLoadD(double newLoad) {
