@@ -17,55 +17,64 @@ public class DisturbanceGenerator extends Thread {
 	private double period;
 	private double sign = -1;
 	private double manual;
-	private double ref;
+	private double dist;
 	private double max_ctrl;
 	private int mode = MANUAL;
 	private Regul regul;
 
 	private class DisturbGUI {
+		
 		private JFrame mFrame;
-		private BoxPanel DisturbPanel = new BoxPanel(BoxPanel.HORIZONTAL);
+		//Initierar de mest grundläggande grafikdelarna:
+		private BoxPanel rightPanel = new BoxPanel(BoxPanel.HORIZONTAL); //Till höger, ska innehålla möjligheten att ändra square wave och noise amplituden.
+		private BoxPanel buttonsPanel = new BoxPanel(BoxPanel.VERTICAL); // I mitten. Kan ändra läge samt sätta av och på noise. Bör kanske lägga in en off knapp.
 		private JPanel sliderPanel = new JPanel();
-		private BoxPanel buttonsPanel = new BoxPanel(BoxPanel.VERTICAL);
+		
+		private JPanel buttonsButtons = new JPanel(new BorderLayout()); //Panel som lägger in knappar i en ny panel av någon anledning.
+		
+		private BoxPanel bigPanel = new BoxPanel(BoxPanel.VERTICAL); // Panel som allt ska läggas in i på slutet.
 
+		
 		// Initierar det som behövs för att ändra variablerna för squareWave:
-		private BoxPanel fieldPanel = new BoxPanel(BoxPanel.VERTICAL);
-		private BoxPanel labelPanel = new BoxPanel(BoxPanel.VERTICAL);
-		private JPanel varPanel = new JPanel();
+		private BoxPanel squareFieldPanel = new BoxPanel(BoxPanel.VERTICAL);
+		private BoxPanel squareLabelPanel = new BoxPanel(BoxPanel.VERTICAL);
+		private JPanel squareVarPanel = new JPanel();
 
-		// Initierar det som behövs för att ändra Disturbance i form av load och noise:
-		private BoxPanel disturbanceFieldPanel = new BoxPanel(BoxPanel.VERTICAL);
-		private BoxPanel disturbanceLabelPanel = new BoxPanel(BoxPanel.VERTICAL);
-		private JPanel disturbancePanel = new JPanel();
+		
+		
+		private BoxPanel noiseFieldPanel = new BoxPanel(BoxPanel.VERTICAL);
+		private BoxPanel noiseLabelPanel = new BoxPanel(BoxPanel.VERTICAL);
+		private JPanel noisePanel = new JPanel();
 
-		private JPanel rightPanel = new JPanel();
-
+		
+		// Skapar en slider:
+		private JSlider slider = new JSlider(JSlider.VERTICAL, -10, 10, 0);
+		
 		// Skapar knappar som styr över om ref generatorn ger en fyrkantsvåg eller om
 		// man justerar den manuellt med en slider.
 		private JRadioButton manButton = new JRadioButton("Manual");
 		private JRadioButton sqButton = new JRadioButton("Square");
-
-		private boolean noise = false;
+		
+		//Knapp som stänger av och på noise i systemet, samt en boolean som håller koll:
 		private JButton noiseButton = new JButton("Measurement Noise OFF");
+		private boolean noise = false;
 		
 
-		// Skapar en slider:
-		private JSlider slider = new JSlider(JSlider.VERTICAL, -10, 10, 0);
+		
 
 		// Skapar två variabelfält för att kunna ändra variablerna live.
 		private DoubleField periodVar = new DoubleField(5, 3);
 		private DoubleField amplitudeVar = new DoubleField(5, 3);
+		// Skapar resten som behövs för att ändra variablerna i square signalen:
 		private JButton applyVars = new JButton("Apply new parameters");
-
 		private boolean ampChanged = false;
 		private boolean periodChanged = false;
 		
 		//Saker för att ordna Noise delen:
 		private DoubleField noiseField = new DoubleField(5,3);
-		private boolean noiseChange = false;
 		private JButton applyNoise = new JButton("Apply new noise");
+		private boolean noiseChange = false;
 		
-		private BoxPanel rightRightPanel = new BoxPanel(BoxPanel.VERTICAL);
 
 		// Constructor
 		private DisturbGUI(double start_amplitude, double start_period) {
@@ -90,10 +99,13 @@ public class DisturbanceGenerator extends Thread {
 			group.add(manButton);
 			group.add(sqButton);
 			group.add(noiseButton);
+			
 			manButton.setSelected(true);
+			
+			buttonsButtons.add(buttonsPanel,BorderLayout.CENTER);
 
-			rightPanel.setLayout(new BorderLayout());
-			rightPanel.add(buttonsPanel, BorderLayout.CENTER);
+			//rightPanel.setLayout(new BorderLayout());
+			//rightPanel.add(buttonsPanel, BorderLayout.CENTER);
 
 			// Skapar den vänstra delen av GUIt, alltså slider och grejer.
 			slider.setPaintTicks(true);
@@ -107,15 +119,15 @@ public class DisturbanceGenerator extends Thread {
 			// Skapar nytt fält med etiketter och fält för att ändra parametrar i square
 			// wave:
 
-			labelPanel.add(new JLabel("Period:"));
-			labelPanel.addFixed(5);
-			labelPanel.add(new JLabel("Amplitude:"));
-			fieldPanel.add(periodVar);
-			fieldPanel.addFixed(5);
-			fieldPanel.add(amplitudeVar);
+			squareLabelPanel.add(new JLabel("Period:"));
+			squareLabelPanel.addFixed(5);
+			squareLabelPanel.add(new JLabel("Amplitude:"));
+			squareFieldPanel.add(periodVar);
+			squareFieldPanel.addFixed(5);
+			squareFieldPanel.add(amplitudeVar);
 			periodVar.setValue(start_period);
 			periodVar.setMinimum(1);
-			periodVar.setMaximum(50);
+			periodVar.setMaximum(Double.POSITIVE_INFINITY);
 			amplitudeVar.setValue(start_amplitude);
 			amplitudeVar.setMaximum(10.01);
 			amplitudeVar.setMinimum(0);
@@ -123,12 +135,14 @@ public class DisturbanceGenerator extends Thread {
 			periodVar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					periodChanged = true;
+					applyVars.setEnabled(true);
 				}
 			});
 
 			amplitudeVar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					ampChanged = true;
+					applyVars.setEnabled(true);
 				}
 			});
 
@@ -143,12 +157,20 @@ public class DisturbanceGenerator extends Thread {
 						periodChanged = false;
 					}
 
+				applyVars.setEnabled(false);
 				}
 
 			});
 
-			disturbanceLabelPanel.add(new Label("Noise disturbance:"));
-			disturbanceFieldPanel.add(noiseField);
+			squareVarPanel.setBorder(BorderFactory.createEtchedBorder());
+			squareVarPanel.add(squareLabelPanel);
+			squareVarPanel.add(squareFieldPanel);
+			squareVarPanel.add(applyVars);
+
+			
+			//Skapar allting för att kunna ändra noise disturbance parametern:
+			noiseLabelPanel.add(new Label("Noise disturbance:"));
+			noiseFieldPanel.add(noiseField);
 
 			noiseField.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -168,25 +190,21 @@ public class DisturbanceGenerator extends Thread {
 				}
 
 			});
-			disturbancePanel.setBorder(BorderFactory.createEtchedBorder());
-			disturbancePanel.add(disturbanceLabelPanel);
-			disturbancePanel.add(disturbanceFieldPanel);
-			disturbancePanel.add(applyNoise);
+			noisePanel.setBorder(BorderFactory.createEtchedBorder());
+			noisePanel.add(noiseLabelPanel);
+			noisePanel.add(noiseFieldPanel);
+			noisePanel.add(applyNoise);
 
-			varPanel.setBorder(BorderFactory.createEtchedBorder());
-			varPanel.add(labelPanel);
-			varPanel.add(fieldPanel);
-			varPanel.add(applyVars);
-
-			rightRightPanel.add(varPanel, BorderLayout.NORTH);
-			rightRightPanel.add(disturbancePanel, BorderLayout.SOUTH);
+			
+			rightPanel.add(squareVarPanel, BorderLayout.NORTH);
+			rightPanel.add(noisePanel, BorderLayout.SOUTH);
 
 			// Lägger ihop knappar och slider till en gemensam frame:
-			DisturbPanel.add(sliderPanel);
-			DisturbPanel.addGlue();
-			DisturbPanel.add(rightPanel);
-			DisturbPanel.addGlue();
-			DisturbPanel.add(rightRightPanel);
+			bigPanel.add(sliderPanel);
+			bigPanel.addGlue();
+			bigPanel.add(buttonsButtons);
+			bigPanel.addGlue();
+			bigPanel.add(rightPanel);
 
 			// WindowListener that exits the system if the main window is closed.
 
@@ -198,13 +216,13 @@ public class DisturbanceGenerator extends Thread {
 
 			// Prövar att byta ut mainframe mot en JFrame för att bättre styra vart den ska
 			// dyka upp.
-			mFrame.getContentPane().add(DisturbPanel, BorderLayout.CENTER);
+			mFrame.getContentPane().add(bigPanel, BorderLayout.CENTER);
 			mFrame.pack();
 
 			// Position the main window at the screen center.
 			Dimension sd = Toolkit.getDefaultToolkit().getScreenSize();
 			Dimension fd = mFrame.getSize();
-			mFrame.setLocation((sd.width - fd.width) / 9, (sd.height - fd.height) / 2);
+			mFrame.setLocation((sd.width - fd.width) / 12, (sd.height - fd.height) / 5);
 
 			// Make the window visible.
 			mFrame.setVisible(true);
@@ -245,12 +263,12 @@ public class DisturbanceGenerator extends Thread {
 	}
 
 	// Constructor
-	public DisturbanceGenerator(int refGenPriority) {
-		priority = refGenPriority;
-		amplitude = 5;
-		period = 15;
+	public DisturbanceGenerator(int distGenPriority) {
+		priority = distGenPriority;
+		amplitude = 2;
+		period = 5;
 		manual = 0.0;
-		ref = Math.PI;
+		dist = Math.PI;
 		max_ctrl = 10;
 
 		new DisturbGUI(amplitude, period);
@@ -260,8 +278,8 @@ public class DisturbanceGenerator extends Thread {
 		this.regul = regul;
 	}
 
-	private synchronized void setRef(double newRef) {
-		ref = newRef;
+	private synchronized void setDist(double newDist) {
+		dist = newDist;
 	}
 
 	private synchronized void setManual(double newManual) {
@@ -280,12 +298,9 @@ public class DisturbanceGenerator extends Thread {
 		regul.toggleNoise();
 	}
 
-	private synchronized void toggleLoadD() {
-		regul.toggleLoadD();
-	}
-
-	public synchronized double getRef() {
-		return (mode == MANUAL) ? manual : ref;
+	
+	public synchronized double getDist() {
+		return (mode == MANUAL) ? manual : dist;
 	}
 
 	public void run() {
@@ -306,7 +321,7 @@ public class DisturbanceGenerator extends Thread {
 				synchronized (this) {
 					if (mode == MANUAL) {
 						setpoint = manual;
-						ref = manual;
+						dist = manual;
 					} else {
 						timeleft -= h;
 						if (timeleft <= 0) {
@@ -317,7 +332,7 @@ public class DisturbanceGenerator extends Thread {
 						if (new_setpoint != setpoint) {
 							if (mode == SQUARE) {
 								setpoint = new_setpoint;
-								ref = setpoint;
+								dist = setpoint;
 							}
 						}
 					}
