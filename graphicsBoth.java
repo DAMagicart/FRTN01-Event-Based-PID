@@ -9,12 +9,12 @@ import se.lth.control.*;
 import se.lth.control.plot.PlotterPanel;
 import se.lth.control.plot.*;
 
-public class graphics {
+public class graphicsBoth extends graphics{
 
 	// private static final double eps = 0.000001;
 
 	// External parameters:
-	private Regul regul;
+	private regulBoth regul;
 	private PIDParameters T_parameters;
 	private PIDParameters E_parameters;
 	private int priority;
@@ -44,13 +44,11 @@ public class graphics {
 
 	private DoubleField EventeLim = new DoubleField(5, 3);
 	private DoubleField eAvgPeriod = new DoubleField(5, 3);
-	private IntegerField eFactor = new IntegerField(5);
 
 	private JButton applyTimeVariables, applyEventVariables;
 
 	private JRadioButton OffButton;
-	private JRadioButton TimeDriven;
-	private JRadioButton EventDriven;
+	private JRadioButton BothConcurrently;
 
 	// isInitialized becomes true when the GUI initializes.
 	private boolean isInitialized = false;
@@ -61,21 +59,19 @@ public class graphics {
 	// Boolean to keep track in eLim:
 	private boolean eLimChanged = false;
 
-	//private boolean eFactorChanged = false;
-
 	// Monitors
 	private ModeMonitor modeMon;
 
 	// Declarartion of main frame.
 	private JFrame frame;
-
-	/* Constructor */
-	public graphics(int GUIPriority, ModeMonitor modeMon) {
+	
+	public graphicsBoth(int GUIPriority, ModeMonitor modeMon) {
+		super(GUIPriority, modeMon);
 		this.priority = GUIPriority;
 		this.modeMon = modeMon;
 	}
 
-	public void setRegul(Regul regul) {
+	public void setRegul(regulBoth regul) {
 		this.regul = regul;
 	}
 
@@ -87,18 +83,19 @@ public class graphics {
 
 	/* Initialize the GUI */
 	public void initializeGUI() {
-
+		modeMon.setMode(ModeMonitor.Mode.BOTH);
+		
 		frame = new JFrame("Machine modelling");
 
 		// Create a panel for the two plotters.
 		plotterPanel = new BoxPanel(BoxPanel.VERTICAL);
 		// Create PlotterPanels.
-		measPanel = new PlotterPanel(2, priority);
+		measPanel = new PlotterPanel(3, priority);
 		measPanel.setYAxis(20.0, -10.0, 2, 2);
 		measPanel.setXAxis(10, 5, 5);
 		// Updates how smooth the plotter is:
 		measPanel.setUpdateFreq(10);
-		ctrlPanel = new PlotterPanel(1, priority);
+		ctrlPanel = new PlotterPanel(2, priority);
 		ctrlPanel.setYAxis(20.0, -10.0, 2, 2);
 		ctrlPanel.setXAxis(10, 5, 5);
 		// Updates how smooth the plotter is:
@@ -268,7 +265,6 @@ public class graphics {
 		EventNVal.setValue(E_parameters.N);
 		EventBetaVal.setValue(E_parameters.Beta);
 		EventHVal.setValue(E_parameters.H);
-		eFactor.setValue(regul.factor);
 
 		// Add action listeners for the Event_Field variables:
 
@@ -326,16 +322,12 @@ public class graphics {
 		});
 
 		// Adding field to change eLim in the event detector.
-		BoxPanel eventSpecific = new BoxPanel(BoxPanel.VERTICAL);
+		BoxPanel EventSpecific = new BoxPanel(BoxPanel.VERTICAL);
 		BoxPanel eLimPanel = new BoxPanel(BoxPanel.HORIZONTAL);
 		JPanel eLimLabelPanel = new JPanel();
 		JPanel eLimFieldPanel = new JPanel();
 		JPanel ePeriodLabelPanel = new JPanel();
 		JPanel ePeriodFieldPanel = new JPanel();
-		
-		BoxPanel eFactorPanel = new BoxPanel(BoxPanel.HORIZONTAL);
-		JPanel eFactorLabelPanel = new JPanel();
-		JPanel eFactorFieldPanel = new JPanel();
 
 		BoxPanel eAvgPeriodPanel = new BoxPanel(BoxPanel.HORIZONTAL);
 		ePeriodLabelPanel.add(new Label("Average Period"));
@@ -356,16 +348,6 @@ public class graphics {
 			}
 		});
 
-		eFactorLabelPanel.add(new Label("Max period is n*nominell:"));
-		eFactorFieldPanel.add(eFactor);
-
-		eFactor.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				regul.setHMax(eFactor.getValue());
-
-			}
-		});
-
 		// Adding together the parts for a eLim field.
 		eLimPanel.add(eLimLabelPanel);
 		eLimPanel.addGlue();
@@ -374,10 +356,6 @@ public class graphics {
 		eAvgPeriodPanel.add(ePeriodLabelPanel);
 		eAvgPeriodPanel.addGlue();
 		eAvgPeriodPanel.add(ePeriodFieldPanel);
-		
-		eFactorPanel.add(eFactorLabelPanel);
-		eFactorPanel.addGlue();
-		eFactorPanel.add(eFactorFieldPanel);
 
 		applyEventVariables = new JButton("Apply Event Variables");
 		applyEventVariables.setEnabled(false);
@@ -396,16 +374,15 @@ public class graphics {
 			}
 		});
 
-		eventSpecific.add(eLimPanel);
-		eventSpecific.add(eAvgPeriodPanel);
-		eventSpecific.add(eFactorPanel);
+		EventSpecific.add(eLimPanel);
+		EventSpecific.add(eAvgPeriodPanel);
 		
 		EventParametersPanel.add(EventPIDLabelPanel);
 		EventParametersPanel.addGlue();
 		EventParametersPanel.add(EventPIDFieldPanel);
 		EventParametersPanel.addGlue();
 		EventParametersPanel.add(applyEventVariables, BorderLayout.SOUTH);
-		EventParametersPanel.add(eventSpecific, BorderLayout.EAST); // Adding the eLim parameter changer to the
+		EventParametersPanel.add(EventSpecific, BorderLayout.EAST); // Adding the eLim parameter changer to the
 																// EventParametersPanel.
 
 		BoxPanel EventParButtonPanel = new BoxPanel(BoxPanel.VERTICAL);
@@ -428,27 +405,10 @@ public class graphics {
 		modeChangePanel.setBorder(BorderFactory.createEtchedBorder());
 		ButtonGroup group = new ButtonGroup();
 		OffButton = new JRadioButton("OFF");
-		EventDriven = new JRadioButton("EVENT");
-		TimeDriven = new JRadioButton("TIME");
+		BothConcurrently = new JRadioButton("BOTH");
 		group.add(OffButton);
-		group.add(EventDriven);
-		group.add(TimeDriven);
-		TimeDriven.setSelected(true);
-
-		TimeDriven.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				modeMon.setMode(ModeMonitor.Mode.TIME);
-			}
-
-		});
-
-		EventDriven.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				modeMon.setMode(ModeMonitor.Mode.EVENT);
-				regul.setEventTime(System.currentTimeMillis());
-			}
-
-		});
+		group.add(BothConcurrently);
+		BothConcurrently.setSelected(true);
 
 		OffButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -457,10 +417,17 @@ public class graphics {
 
 		});
 
+		BothConcurrently.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				modeMon.setMode(ModeMonitor.Mode.BOTH);
+				regul.setEventTime(System.currentTimeMillis());
+			}
+
+		});
+
 		// Button mode layout
-		modeChangePanel.add(TimeDriven, BorderLayout.WEST);
-		modeChangePanel.add(EventDriven, BorderLayout.EAST);
-		modeChangePanel.add(OffButton, BorderLayout.SOUTH);
+		modeChangePanel.add(BothConcurrently, BorderLayout.EAST);
+		modeChangePanel.add(OffButton, BorderLayout.WEST);
 
 		// sub panel layout
 		subPanel = new JPanel();
@@ -504,18 +471,18 @@ public class graphics {
 	}
 
 	/** Called by Regul to plot a measurement data point. */
-	public synchronized void putMeasurementData(double t, double yRef, double y) {
+	public synchronized void putMeasurementData(double t, double yT, double yE, double yRef) {
 		if (isInitialized) {
-			measPanel.putData(t, yRef, y);
+			measPanel.putData(t, yT, yE, yRef);
 		} else {
 			System.out.println("Note: GUI not yet initialized. Ignoring call to putMeasurementData().");
 		}
 	}
 
 	/** Called by Regul to plot a control signal data point. */
-	public synchronized void putControlData(double t, double u) {
+	public synchronized void putControlData(double t, double uT, double uE) {
 		if (isInitialized) {
-			ctrlPanel.putData(t, u);
+			ctrlPanel.putData(t, uT, uE);
 		} else {
 			System.out.println("Note: GUI not yet initialized. Ignoring call to putControlData().");
 		}

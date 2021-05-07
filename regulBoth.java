@@ -1,35 +1,37 @@
 
-public class Regul extends Thread {
+public class regulBoth extends Regul {
 
 	private Event_PID E_PID = new Event_PID();
 	private PID T_PID = new PID();
 
 	private Plant Servo;
+	private Plant ServoE;
 
 	private int priority;
 	private boolean shouldRun = true;
 	private long starttime;
 
 	private ModeMonitor modeMon;
-	private graphics GUI;
+	private graphicsBoth GUI;
 	private ReferenceGenerator refGen;
 	private DisturbanceGenerator disturbanceGen;
-	
+
 	public long eventTime;
 	private int eventFreq;
-	
-	double eLim = 0.1;
-	int factor = 10;
-	double hmax;
 
-	public Regul(int pri, ModeMonitor modeMon) {
+	double eLim = 0.1;
+
+	public regulBoth(int pri, ModeMonitor modeMon) {
+		super(pri, modeMon);
 		priority = pri;
 		setPriority(priority);
 
 		Servo = new Plant();
+		ServoE = new Plant();
 		this.modeMon = modeMon;
+
 	}
-	
+
 	public void setEventTime(long time) {
 		this.eventTime = time;
 	}
@@ -68,16 +70,16 @@ public class Regul extends Thread {
 		return v;
 	}
 
-	public void setgraphics(graphics GUI) {
-		this.GUI = GUI;
-	}
-
 	public void setRefGen(ReferenceGenerator refGen) {
 		this.refGen = refGen;
 	}
-	
+
 	public void setDisturbanceGen(DisturbanceGenerator disturbanceGen) {
 		this.disturbanceGen = disturbanceGen;
+	}
+
+	public void setgraphics(graphicsBoth GUI) {
+		this.GUI = GUI;
 	}
 
 	public void shutDown() {
@@ -92,40 +94,38 @@ public class Regul extends Thread {
 
 		this.eLim = neweLim;
 	}
-	
-	public void setHMax(int factor) {
-		this.factor = factor;
-		hmax = factor*E_PID.getParameters().H;
-	}
 
 	public void toggleNoise() {
 		Servo.toggleNoise();
+		ServoE.toggleNoise();
 	}
-	
+
 	public void setNoise(double newNoise) {
 		Servo.setNoise(newNoise);
+		Servo.setNoise(newNoise);
 	}
-	
+
 	public double getNoise() {
 		return Servo.getNoise();
 	}
-	
+
 	public void setLoadD(double newLoad) {
 		Servo.setLoadD(newLoad);
-		
+		ServoE.setLoadD(newLoad);
+
 	}
-	
+
 	public double getLoadD() {
 		return Servo.getLoadD();
-		
+
 	}
-	
-	private void sendDataToOpCom(double yRef, double y, double u) {
+
+	private void sendDataToOpCom(double yRef, double yT, double yE, double uT, double uE) {
 		double x = (double) (System.currentTimeMillis() - starttime) / 1000.0;
-		GUI.putControlData(x, u);
-		GUI.putMeasurementData(x, yRef, y);
+		GUI.putControlData(x, uT, uE);
+		GUI.putMeasurementData(x, yT, yE, yRef);
 	}
-	
+
 	private void updateEPeriod(int frequency) {
 		double t = (double) (System.currentTimeMillis() - eventTime) / 1000.0;
 		GUI.avgPeriod(frequency, t);
@@ -136,69 +136,70 @@ public class Regul extends Thread {
 		long duration;
 		long t = System.currentTimeMillis();
 		starttime = t;
+		eventTime = System.currentTimeMillis();
 
 		double hNom = E_PID.getParameters().H;
 		double hact = 0;
-		hmax = hNom * factor;
+		double hmax = hNom * 10;
 
 		while (shouldRun) {
 			double PosRef = refGen.getRef();
-			
+
 			double disturbanceSignal = disturbanceGen.getDist();
-			
+
 			Servo.setLoadD(disturbanceSignal);
-			
-			double VelRef = 0;
-			double AngVel = Servo.getAngleVel();
-			double AngPos = Servo.getAnglePos();
+			ServoE.setLoadD(disturbanceSignal);
+
+			// double VelRef = 0;
+			// double AngVelT = Servo.getAnglePos();
+			double AngVelT = Servo.getAngleVel();
+			double AngVelE = Servo.getAngleVel();
 			double uRef = 0;
-			double u = 0;
-			double eP = AngVel - PosRef;
-			
+			double uT = 0;
+			double uE = 0;
+			double eP = AngVelE - PosRef;
 
 			switch (modeMon.getMode()) {
 			case OFF: {
 				T_PID.reset();
 				E_PID.reset();
-				u = 0;
-				VelRef = 0;
+				uT = 0;
+				uE = 0;
 				PosRef = 0;
 				break;
 			}
 			case TIME: {
-				synchronized (T_PID) {
-					u = limit(T_PID.calculateOutput(AngVel, PosRef));
-					Servo.setU(u);
-					T_PID.updateState(u);
-				}
-				break;
 			}
 			case EVENT: {
+			}
+			case BOTH: {
+				synchronized (T_PID) {
+					uT = limit(T_PID.calculateOutput(AngVelT, PosRef));
+					Servo.setU(uT);
+					T_PID.updateState(uT);
+				}
 				synchronized (E_PID) {
 					// hact = (double) (System.currentTimeMillis() - timeOld) / 1000.0;
 					hact += hNom;
 					if ((Math.abs(eP) >= eLim) || (hact >= hmax)) {
-						eventFreq ++;
-						u = limit(E_PID.calculateOutput(AngVel, PosRef, hact));
-						Servo.setU(u);
-						E_PID.updateState(u);
+						eventFreq++;
+						uE = limit(E_PID.calculateOutput(AngVelE, PosRef, hact));
+						ServoE.setU(uE);
+						E_PID.updateState(uE);
 						// timeOld = System.currentTimeMillis();
 						hact = 0;
 					}
 				}
 				updateEPeriod(eventFreq);
+			}
 				break;
-			}
-			case BOTH: {
-			}
 			default: {
 				System.out.println("Error: Illegal mode.");
 				break;
 			}
 			}
 
-
-			sendDataToOpCom(PosRef, AngVel, u);
+			sendDataToOpCom(PosRef, AngVelT, AngVelE, uT, uE);
 			// sleep
 			t = t + T_PID.getHMillis();
 			duration = t - System.currentTimeMillis();
@@ -212,6 +213,6 @@ public class Regul extends Thread {
 			}
 		}
 		Servo.setU(0.0);
+		ServoE.setU(0.0);
 	}
 }
-
