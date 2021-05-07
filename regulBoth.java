@@ -1,3 +1,5 @@
+package rts_projectTest;
+
 
 public class regulBoth extends Regul {
 
@@ -153,7 +155,7 @@ public class regulBoth extends Regul {
 			// double VelRef = 0;
 			// double AngVelT = Servo.getAnglePos();
 			double AngVelT = Servo.getAngleVel();
-			double AngVelE = Servo.getAngleVel();
+			double AngVelE = ServoE.getAngleVel();
 			double uRef = 0;
 			double uT = 0;
 			double uE = 0;
