@@ -141,6 +141,7 @@ public class Regul extends Thread {
 		double hNom = E_PID.getParameters().H;
 		double hact = 0;
 		hmax = hNom * factor;
+		double u = 0;
 
 		while (shouldRun) {
 			double PosRef = refGen.getRef();
@@ -153,7 +154,6 @@ public class Regul extends Thread {
 			double AngVel = Servo.getAngleVel();
 			double AngPos = Servo.getAnglePos();
 			double uRef = 0;
-			double u = 0;
 			double eP = AngVel - PosRef;
 			
 

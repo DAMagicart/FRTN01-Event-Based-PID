@@ -142,6 +142,8 @@ public class regulBoth extends Regul {
 		double hNom = E_PID.getParameters().H;
 		double hact = 0;
 		double hmax = hNom * 10;
+		double uT = 0;
+		double uE = 0;
 
 		while (shouldRun) {
 			double PosRef = refGen.getRef();
@@ -155,9 +157,6 @@ public class regulBoth extends Regul {
 			// double AngVelT = Servo.getAnglePos();
 			double AngVelT = Servo.getAngleVel();
 			double AngVelE = ServoE.getAngleVel();
-			double uRef = 0;
-			double uT = 0;
-			double uE = 0;
 			double eP = AngVelE - PosRef;
 
 			switch (modeMon.getMode()) {
