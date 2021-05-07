@@ -1,5 +1,3 @@
-package rts_projectTest;
-
 
 public class regulBoth extends Regul {
 
@@ -34,8 +32,9 @@ public class regulBoth extends Regul {
 
 	}
 
-	public void setEventTime(long time) {
+	public void setEventTimeNFreq(long time) {
 		this.eventTime = time;
+		eventFreq = 0;
 	}
 
 	// Sets the Time controller's parameters

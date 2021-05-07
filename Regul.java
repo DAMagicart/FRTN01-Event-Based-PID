@@ -30,8 +30,9 @@ public class Regul extends Thread {
 		this.modeMon = modeMon;
 	}
 	
-	public void setEventTime(long time) {
+	public void setEventTimeNFreq(long time) {
 		this.eventTime = time;
+		eventFreq = 0;
 	}
 
 	// Sets the Time controller's parameters

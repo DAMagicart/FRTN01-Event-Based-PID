@@ -420,7 +420,7 @@ public class graphicsBoth extends graphics{
 		BothConcurrently.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				modeMon.setMode(ModeMonitor.Mode.BOTH);
-				regul.setEventTime(System.currentTimeMillis());
+				regul.setEventTimeNFreq(System.currentTimeMillis());
 			}
 
 		});

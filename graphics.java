@@ -445,7 +445,7 @@ public class graphics {
 		EventDriven.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				modeMon.setMode(ModeMonitor.Mode.EVENT);
-				regul.setEventTime(System.currentTimeMillis());
+				regul.setEventTimeNFreq(System.currentTimeMillis());
 			}
 
 		});
