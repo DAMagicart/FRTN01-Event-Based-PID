@@ -83,13 +83,6 @@ public class Plant {
 	private void updateStates() {
 		omega = A11 * omega + B11 * u;
 		theta = A21 * omega;
-		if (omega < -10) {
-			omega = -10;
-			theta = 0;
-		} else if (omega > 10) {
-			omega = 10;
-			theta = 0;
-		}
 	}
 
 	public double getAnglePos() {
