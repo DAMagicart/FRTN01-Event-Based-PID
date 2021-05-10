@@ -16,7 +16,7 @@ public class PID {
 	public PID() {
 		p = new PIDParameters();
 		// Initial PID Variables (Comment for AngPos)
-		p.Beta = 0.5;
+		p.Beta = 2;
 		p.H = 0.02;
 		p.integratorOn = true;
 		p.K = 0.2;

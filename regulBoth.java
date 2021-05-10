@@ -20,6 +20,8 @@ public class regulBoth extends Regul {
 	private int eventFreq;
 
 	double eLim = 0.1;
+	int factor = 10;
+	double hmax;
 
 	public regulBoth(int pri, ModeMonitor modeMon) {
 		super(pri, modeMon);
@@ -118,7 +120,11 @@ public class regulBoth extends Regul {
 
 	public double getLoadD() {
 		return Servo.getLoadD();
-
+	}
+	
+	public void setHMax(int factor) {
+		this.factor = factor;
+		hmax = factor*E_PID.getParameters().H;
 	}
 
 	private void sendDataToOpCom(double yRef, double yT, double yE, double uT, double uE) {
@@ -139,9 +145,8 @@ public class regulBoth extends Regul {
 		starttime = t;
 		eventTime = System.currentTimeMillis();
 
-		double hNom = E_PID.getParameters().H;
 		double hact = 0;
-		double hmax = hNom * 10;
+		hmax = factor*E_PID.getParameters().H;
 		double uT = 0;
 		double uE = 0;
 
@@ -180,7 +185,7 @@ public class regulBoth extends Regul {
 				}
 				synchronized (E_PID) {
 					// hact = (double) (System.currentTimeMillis() - timeOld) / 1000.0;
-					hact += hNom;
+					hact += E_PID.getParameters().H;;
 					if ((Math.abs(eP) >= eLim) || (hact >= hmax)) {
 						eventFreq++;
 						uE = limit(E_PID.calculateOutput(AngVelE, PosRef, hact));

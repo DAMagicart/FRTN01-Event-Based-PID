@@ -18,7 +18,7 @@ public class Event_PID {
 	public Event_PID() {
 		p = new PIDParameters();
 		// Initial PID Variables, Comment AngPos, more sensitive to load disturbance.
-		p.Beta = 3;
+		p.Beta = 2;
 		p.H = 0.02;
 		p.integratorOn = true;
 		p.K = 0.2;

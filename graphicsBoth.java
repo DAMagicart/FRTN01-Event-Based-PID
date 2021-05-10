@@ -1,9 +1,3 @@
-
-package rts_projectTest;
-
-
-import SimEnvironment.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -47,6 +41,7 @@ public class graphicsBoth extends graphics{
 
 	private DoubleField EventeLim = new DoubleField(5, 3);
 	private DoubleField eAvgPeriod = new DoubleField(5, 3);
+	private IntegerField eFactor = new IntegerField(5);
 
 	private JButton applyTimeVariables, applyEventVariables;
 
@@ -268,6 +263,7 @@ public class graphicsBoth extends graphics{
 		EventNVal.setValue(E_parameters.N);
 		EventBetaVal.setValue(E_parameters.Beta);
 		EventHVal.setValue(E_parameters.H);
+		eFactor.setValue(regul.factor);
 
 		// Add action listeners for the Event_Field variables:
 
@@ -331,9 +327,13 @@ public class graphicsBoth extends graphics{
 		JPanel eLimFieldPanel = new JPanel();
 		JPanel ePeriodLabelPanel = new JPanel();
 		JPanel ePeriodFieldPanel = new JPanel();
+		
+		BoxPanel eFactorPanel = new BoxPanel(BoxPanel.HORIZONTAL);
+		JPanel eFactorLabelPanel = new JPanel();
+		JPanel eFactorFieldPanel = new JPanel();
 
 		BoxPanel eAvgPeriodPanel = new BoxPanel(BoxPanel.HORIZONTAL);
-		ePeriodLabelPanel.add(new Label("Average Period"));
+		ePeriodLabelPanel.add(new Label("Ratio: time/average event-based period"));
 		ePeriodFieldPanel.add(eAvgPeriod);
 		eAvgPeriod.setValue(0);
 
@@ -350,6 +350,16 @@ public class graphicsBoth extends graphics{
 				}
 			}
 		});
+		
+		eFactorLabelPanel.add(new Label("Max period is n*nominell:"));
+		eFactorFieldPanel.add(eFactor);
+
+		eFactor.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				regul.setHMax(eFactor.getValue());
+
+			}
+		});
 
 		// Adding together the parts for a eLim field.
 		eLimPanel.add(eLimLabelPanel);
@@ -359,7 +369,11 @@ public class graphicsBoth extends graphics{
 		eAvgPeriodPanel.add(ePeriodLabelPanel);
 		eAvgPeriodPanel.addGlue();
 		eAvgPeriodPanel.add(ePeriodFieldPanel);
-
+		
+		eFactorPanel.add(eFactorLabelPanel);
+		eFactorPanel.addGlue();
+		eFactorPanel.add(eFactorFieldPanel);
+		
 		applyEventVariables = new JButton("Apply Event Variables");
 		applyEventVariables.setEnabled(false);
 		applyEventVariables.addActionListener(new ActionListener() {
@@ -379,6 +393,7 @@ public class graphicsBoth extends graphics{
 
 		EventSpecific.add(eLimPanel);
 		EventSpecific.add(eAvgPeriodPanel);
+		EventSpecific.add(eFactorPanel);
 		
 		EventParametersPanel.add(EventPIDLabelPanel);
 		EventParametersPanel.addGlue();
