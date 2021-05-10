@@ -1,9 +1,3 @@
-
-package rts_projectTest;
-
-
-import SimEnvironment.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -526,8 +520,7 @@ public class graphics {
 
 	public synchronized void avgPeriod(int freq, double time) {
 		if (freq != 0) {
-			eAvgPeriod.setValue((double) (T_parameters.H/(time/freq )));
-			
+			eAvgPeriod.setValue((double) (time / freq));
 		}
 	}
 

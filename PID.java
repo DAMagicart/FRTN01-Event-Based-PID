@@ -15,12 +15,11 @@ public class PID {
 	// Constructor
 	public PID() {
 		p = new PIDParameters();
-		// Initial PID Variables (Comment for AngPos)
+		// Initial PID Variables
 		p.Beta = 0.5;
 		p.H = 0.02;
 		p.integratorOn = true;
 		p.K = 0.2;
-		//p.K = 0.05;
 		p.N = 0.5;
 		p.Td = 0.5;
 		p.Ti = 0.1;
